@@ -1,0 +1,1446 @@
+{% extends "role_base.html" %}
+
+{% block title %}Off Days Management{% if employee_role == 'admin' or employee_role == 'manager' %} - Admin Panel{% endif %}{% endblock %}
+
+{% block sidebar_icon %}{% if employee_role == 'admin' or employee_role == 'manager' %}crown{% else %}calendar-times{% endif %}{% endblock %}
+{% block sidebar_title %}{% if employee_role == 'admin' or employee_role == 'manager' %}Admin Panel{% else %}Off Days{% endif %}{% endblock %}
+
+{% block sidebar_nav %}
+{% if employee_role == 'admin' or employee_role == 'manager' %}
+<!-- Payroll -->
+<a href="/admin/payroll" class="nav-item flex items-center px-4 py-4 text-white rounded-2xl hover:bg-white/20 transition-all duration-200 group">
+    <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center mr-4 group-hover:bg-white/30 transition-colors duration-200">
+        <i class="fas fa-money-check-alt text-white text-lg"></i>
+    </div>
+    <div>
+        <p class="font-semibold">Payroll</p>
+        <p class="text-xs text-white/70">Salaries & payroll</p>
+    </div>
+</a>
+{% endif %}
+<!-- Offdays -->
+<a href="/admin/off-days-management" class="nav-item flex items-center px-4 py-4 text-white rounded-2xl bg-white/20 transition-all duration-200 group">
+    <div class="w-10 h-10 bg-white/30 rounded-xl flex items-center justify-center mr-4">
+        <i class="fas fa-calendar-times text-white text-lg"></i>
+    </div>
+    <div>
+        <p class="font-semibold">Offdays</p>
+        <p class="text-xs text-white/70">Leave & off days</p>
+    </div>
+</a>
+{% if employee_role == 'admin' or employee_role == 'manager' %}
+<!-- Register Off Days -->
+<a href="#" id="open-off-days-modal" class="nav-item flex items-center px-4 py-3 ml-6 text-white rounded-xl hover:bg-white/20 transition-all duration-200 group">
+    <div class="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center mr-3 group-hover:bg-white/30 transition-colors duration-200">
+        <i class="fas fa-plus text-white text-sm"></i>
+    </div>
+    <div>
+        <p class="font-semibold text-sm">Register Off Days</p>
+        <p class="text-xs text-white/70">Add or edit off days</p>
+    </div>
+</a>
+
+<!-- Credit Sales -->
+{% if hotel_settings and hotel_settings.enable_credit_sales %}
+<a href="/admin/credit-sales" class="nav-item flex items-center px-4 py-4 text-white rounded-2xl hover:bg-white/20 transition-all duration-200 group">
+    <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center mr-4 group-hover:bg-white/30 transition-colors duration-200">
+        <i class="fas fa-credit-card text-white text-lg"></i>
+    </div>
+    <div>
+        <p class="font-semibold">Credit Sales</p>
+        <p class="text-xs text-white/70">Manage credit sales</p>
+    </div>
+</a>
+{% endif %}
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="relative overflow-hidden bg-gradient-to-br from-slate-50 via-white to-blue-50 rounded-3xl mb-8">
+    <div class="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-purple-600/5"></div>
+    <div class="relative px-6 py-8 lg:px-8 lg:py-12">
+        <div class="flex items-center space-x-4 mb-4">
+            <div class="w-12 h-12 bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
+                <i class="fas fa-calendar-times text-white text-xl"></i>
+            </div>
+            <div>
+                <h1 class="text-3xl lg:text-5xl font-bold bg-gradient-to-r from-gray-900 via-blue-900 to-purple-900 bg-clip-text text-transparent">
+                    Off Days Calendar
+                </h1>
+                <p class="text-gray-600 text-base lg:text-lg font-medium mt-1">View all employees and their scheduled off days, vacations, and leave requests.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main Content Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-4 gap-6 lg:gap-8">
+    <!-- Calendar Section -->
+    <div class="lg:col-span-3">
+        <div class="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+            <!-- Calendar Header -->
+            <div class="bg-gradient-to-r from-gray-50 to-blue-50 px-6 py-4 border-b border-gray-200">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <h2 class="text-xl lg:text-2xl font-bold text-gray-800">Off Days Calendar</h2>
+                    <button onclick="refreshCalendar()" class="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-200 font-semibold shadow-lg hover:shadow-xl">
+                        <i class="fas fa-sync-alt"></i>
+                        <span>Refresh</span>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Calendar Navigation -->
+            <div class="px-6 py-4 border-b border-gray-200 bg-white">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div class="flex items-center justify-center sm:justify-start gap-3">
+                        <button onclick="previousMonth()" class="p-2 rounded-xl bg-gray-100 hover:bg-gray-200 transition-colors duration-200">
+                            <i class="fas fa-chevron-left text-gray-600"></i>
+                        </button>
+                        <h4 id="current-month-year" class="text-lg sm:text-xl font-bold text-gray-800 min-w-[180px] text-center">January 2024</h4>
+                        <button onclick="nextMonth()" class="p-2 rounded-xl bg-gray-100 hover:bg-gray-200 transition-colors duration-200">
+                            <i class="fas fa-chevron-right text-gray-600"></i>
+                        </button>
+                    </div>
+                    <div class="flex items-center justify-center sm:justify-end gap-2 text-sm text-gray-600">
+                        <i class="fas fa-calendar-day"></i>
+                        <span id="today-date" class="font-semibold text-gray-800"></span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Calendar Grid -->
+            <div class="p-4 lg:p-6">
+                <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                    <!-- Calendar Header -->
+                    <div class="grid grid-cols-7 bg-gradient-to-r from-gray-50 to-blue-50 border-b border-gray-200">
+                        <div class="p-3 text-center text-sm font-bold text-gray-700">Sun</div>
+                        <div class="p-3 text-center text-sm font-bold text-gray-700">Mon</div>
+                        <div class="p-3 text-center text-sm font-bold text-gray-700">Tue</div>
+                        <div class="p-3 text-center text-sm font-bold text-gray-700">Wed</div>
+                        <div class="p-3 text-center text-sm font-bold text-gray-700">Thu</div>
+                        <div class="p-3 text-center text-sm font-bold text-gray-700">Fri</div>
+                        <div class="p-3 text-center text-sm font-bold text-gray-700">Sat</div>
+                    </div>
+                    
+                    <!-- Calendar Body -->
+                    <div id="calendar-body" class="grid grid-cols-7">
+                        <!-- Calendar days will be dynamically generated here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="space-y-6">
+        <!-- Employee Off Days List -->
+        <div class="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+            <div class="bg-gradient-to-r from-gray-50 to-blue-50 px-6 py-4 border-b border-gray-200">
+                <h2 class="text-lg font-bold text-gray-800">Employees & Off Days</h2>
+            </div>
+            <div class="p-4 lg:p-6 max-h-[600px] overflow-y-auto">
+                <div id="employee-off-days-list" class="space-y-4">
+                    <!-- Employee off day items will be dynamically generated here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Off Day Types Legend -->
+        <div class="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+            <div class="bg-gradient-to-r from-gray-50 to-purple-50 px-6 py-4 border-b border-gray-200">
+                <h2 class="text-lg font-bold text-gray-800">Legend</h2>
+            </div>
+            <div class="p-4 lg:p-6">
+                <div class="space-y-3 mb-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-4 h-4 bg-blue-100 border-l-4 border-blue-500 rounded"></div>
+                        <span class="text-sm text-gray-700 font-medium">Vacation</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="w-4 h-4 bg-red-100 border-l-4 border-red-500 rounded"></div>
+                        <span class="text-sm text-gray-700 font-medium">Sick Leave</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="w-4 h-4 bg-green-100 border-l-4 border-green-500 rounded"></div>
+                        <span class="text-sm text-gray-700 font-medium">Personal</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="w-4 h-4 bg-purple-100 border-l-4 border-purple-500 rounded"></div>
+                        <span class="text-sm text-gray-700 font-medium">Holiday</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="w-4 h-4 bg-orange-100 border-l-4 border-orange-500 rounded"></div>
+                        <span class="text-sm text-gray-700 font-medium">Emergency</span>
+                    </div>
+                </div>
+                
+                <div class="pt-4 border-t border-gray-200">
+                    <h3 class="text-sm font-bold text-gray-800 mb-3">Status</h3>
+                    <div class="space-y-2">
+                        <div class="flex items-center gap-3">
+                            <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                            <span class="text-xs text-gray-600">Approved</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <div class="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                            <span class="text-xs text-gray-600">Pending</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <div class="w-3 h-3 bg-red-500 rounded-full"></div>
+                            <span class="text-xs text-gray-600">Rejected</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <div class="w-3 h-3 bg-gray-500 rounded-full"></div>
+                            <span class="text-xs text-gray-600">Cancelled</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Date Information Modal -->
+<div id="dateInfoModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 hidden transition-all duration-300">
+    <div class="bg-white rounded-3xl shadow-2xl max-w-2xl w-full mx-4 p-0 animate-fade-in-up relative overflow-hidden">
+        <button onclick="closeDateInfoModal()" class="absolute top-4 right-4 text-gray-400 hover:text-blue-700 transition-colors text-2xl z-10">
+            <i class="fas fa-times"></i>
+        </button>
+        <div class="bg-gradient-to-r from-blue-50 to-purple-50 px-6 py-6 border-b border-gray-200 rounded-t-3xl">
+            <h3 class="text-2xl font-bold text-gray-800" id="date-info-title">Date Information</h3>
+        </div>
+        <div class="p-6">
+            <!-- Date Header -->
+            <div id="date-header" class="mb-6 p-4 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl text-white">
+                <!-- Date details will be populated here -->
+            </div>
+            
+            <!-- Off Days for this Date -->
+            <div id="date-off-days" class="space-y-4">
+                <!-- Off days will be populated here -->
+            </div>
+            
+            <!-- No Off Days Message -->
+            <div id="no-off-days" class="text-center py-12 hidden">
+                <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-calendar-check text-blue-600 text-2xl"></i>
+                </div>
+                <h4 class="text-lg font-bold text-gray-800 mb-2">No Off Days Scheduled</h4>
+                <p class="text-gray-600">All employees are scheduled to work on this date.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Employee Off Day Calendar Modal -->
+<div id="employeeOffDayModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 hidden transition-all duration-300">
+    <div class="bg-white rounded-3xl shadow-2xl max-w-4xl w-full mx-4 p-0 animate-fade-in-up relative overflow-hidden max-h-[90vh] overflow-y-auto">
+        <button onclick="closeEmployeeOffDayModal()" class="absolute top-4 right-4 text-gray-400 hover:text-blue-700 transition-colors text-2xl z-10">
+            <i class="fas fa-times"></i>
+        </button>
+        <div class="bg-gradient-to-r from-blue-50 to-purple-50 px-6 py-6 border-b border-gray-200 rounded-t-3xl">
+            <h3 class="text-2xl font-bold text-gray-800" id="employee-off-day-title">Employee Off Days</h3>
+        </div>
+        <div class="p-6">
+            <!-- Employee Info -->
+            <div id="employee-info" class="mb-6 p-4 bg-gradient-to-r from-gray-50 to-blue-50 rounded-xl border border-gray-200">
+                <!-- Employee details will be populated here -->
+            </div>
+            
+            <!-- Employee Calendar -->
+            <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                <!-- Calendar Header -->
+                <div class="grid grid-cols-7 bg-gradient-to-r from-gray-50 to-blue-50 border-b border-gray-200">
+                    <div class="p-3 text-center text-sm font-bold text-gray-700">Sun</div>
+                    <div class="p-3 text-center text-sm font-bold text-gray-700">Mon</div>
+                    <div class="p-3 text-center text-sm font-bold text-gray-700">Tue</div>
+                    <div class="p-3 text-center text-sm font-bold text-gray-700">Wed</div>
+                    <div class="p-3 text-center text-sm font-bold text-gray-700">Thu</div>
+                    <div class="p-3 text-center text-sm font-bold text-gray-700">Fri</div>
+                    <div class="p-3 text-center text-sm font-bold text-gray-700">Sat</div>
+                </div>
+                
+                <!-- Calendar Body -->
+                <div id="employee-calendar-body" class="grid grid-cols-7">
+                    <!-- Employee calendar days will be dynamically generated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if employee_role == 'admin' or employee_role == 'manager' %}
+<!-- Register Off Days Modal -->
+<div id="register-off-days-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 hidden transition-all duration-300">
+    <div class="bg-white rounded-3xl shadow-2xl max-w-2xl w-full mx-4 p-0 animate-fade-in-up relative overflow-hidden max-h-[90vh] overflow-y-auto">
+        <button id="register-off-days-modal-close" class="absolute top-4 right-4 text-gray-400 hover:text-blue-700 transition-colors text-2xl z-10">
+            <i class="fas fa-times"></i>
+        </button>
+        <div class="bg-gradient-to-r from-blue-50 to-purple-50 px-6 py-6 border-b border-gray-200 rounded-t-3xl">
+            <h3 class="text-2xl font-bold text-gray-800" id="register-off-days-title">Register Off Days</h3>
+            <p class="text-gray-600 text-sm mt-1">Select employee and date range for off days</p>
+        </div>
+        <div class="p-6">
+            <form id="register-off-days-form" class="space-y-6">
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Employee <span class="text-red-500">*</span></label>
+                    <select id="off-days-employee-id" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white" required>
+                        <option value="">Select employee</option>
+                    </select>
+                    <p class="text-xs text-gray-500 mt-1">Only active employees are shown</p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Start Date <span class="text-red-500">*</span></label>
+                        <input id="off-days-start-date" type="date" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">End Date <span class="text-red-500">*</span></label>
+                        <input id="off-days-end-date" type="date" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white" required>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Off Type <span class="text-red-500">*</span></label>
+                    <select id="off-days-type" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white" required>
+                        <option value="vacation">Vacation</option>
+                        <option value="sick_leave">Sick Leave</option>
+                        <option value="personal">Personal</option>
+                        <option value="holiday">Holiday</option>
+                        <option value="emergency">Emergency</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Status</label>
+                    <select id="off-days-status" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white">
+                        <option value="approved">Approved</option>
+                        <option value="pending">Pending</option>
+                        <option value="rejected">Rejected</option>
+                        <option value="cancelled">Cancelled</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Reason (Optional)</label>
+                    <textarea id="off-days-reason" rows="3" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white" placeholder="Enter reason for off days..."></textarea>
+                </div>
+                
+                <!-- Existing Off Days Warning -->
+                <div id="existing-off-days-warning" class="hidden p-4 bg-yellow-50 border border-yellow-200 rounded-xl">
+                    <div class="flex items-start gap-3">
+                        <i class="fas fa-exclamation-triangle text-yellow-600 mt-1"></i>
+                        <div class="flex-1">
+                            <p class="text-sm font-semibold text-yellow-800 mb-1">Existing Off Days Found</p>
+                            <p class="text-xs text-yellow-700 mb-2">This employee already has registered off days in the selected date range. Submitting will update the existing records.</p>
+                            <div id="existing-off-days-list" class="text-xs text-yellow-700 space-y-1"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex justify-end space-x-4 pt-4">
+                    <button type="button" id="register-off-days-cancel-btn" class="px-6 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-all duration-200 font-semibold">Cancel</button>
+                    <button type="submit" class="px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-200 font-semibold shadow-lg hover:shadow-xl">
+                        <i class="fas fa-save mr-2"></i>Save Off Days
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Edit Off Day Modal -->
+<div id="edit-off-day-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 hidden transition-all duration-300">
+    <div class="bg-white rounded-3xl shadow-2xl max-w-md w-full mx-4 p-0 animate-fade-in-up relative overflow-hidden">
+        <button id="edit-off-day-modal-close" class="absolute top-4 right-4 text-gray-400 hover:text-blue-700 transition-colors text-2xl z-10">
+            <i class="fas fa-times"></i>
+        </button>
+        <div class="bg-gradient-to-r from-blue-50 to-purple-50 px-6 py-6 border-b border-gray-200 rounded-t-3xl">
+            <h3 class="text-2xl font-bold text-gray-800">Edit Off Day</h3>
+            <p class="text-gray-600 text-sm mt-1">Update off day details</p>
+        </div>
+        <div class="p-6">
+            <form id="edit-off-day-form" class="space-y-6">
+                <input type="hidden" id="edit-off-day-id">
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Employee</label>
+                    <input id="edit-off-day-employee-name" type="text" readonly class="w-full px-4 py-3 border border-gray-300 rounded-xl bg-gray-100 text-gray-700 font-bold">
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Start Date <span class="text-red-500">*</span></label>
+                        <input id="edit-off-day-start-date" type="date" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">End Date <span class="text-red-500">*</span></label>
+                        <input id="edit-off-day-end-date" type="date" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white" required>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Off Type <span class="text-red-500">*</span></label>
+                    <select id="edit-off-day-type" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white" required>
+                        <option value="vacation">Vacation</option>
+                        <option value="sick_leave">Sick Leave</option>
+                        <option value="personal">Personal</option>
+                        <option value="holiday">Holiday</option>
+                        <option value="emergency">Emergency</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Status</label>
+                    <select id="edit-off-day-status" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white">
+                        <option value="approved">Approved</option>
+                        <option value="pending">Pending</option>
+                        <option value="rejected">Rejected</option>
+                        <option value="cancelled">Cancelled</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Reason (Optional)</label>
+                    <textarea id="edit-off-day-reason" rows="3" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white" placeholder="Enter reason..."></textarea>
+                </div>
+                <div class="flex justify-end space-x-4 pt-4">
+                    <button type="button" id="edit-off-day-cancel-btn" class="px-6 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-all duration-200 font-semibold">Cancel</button>
+                    <button type="submit" class="px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-200 font-semibold shadow-lg hover:shadow-xl">
+                        <i class="fas fa-save mr-2"></i>Update Off Day
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    // Off Days Management Variables
+    let currentMonth = new Date().getMonth() + 1;
+    let currentYear = new Date().getFullYear();
+    let currentOffDayId = null;
+    let calendarData = {};
+    let employees = [];
+    let currentEmployeeId = null;
+    let employeeCalendarData = {};
+    
+    // Employee role and ID from template (for access control)
+    const currentEmployeeRole = {{ employee_role|default('"guest"')|tojson }};
+    const currentEmployeeIdGlobal = {{ employee_id|default('null')|tojson }};
+    const isAdminOrManager = currentEmployeeRole === 'admin' || currentEmployeeRole === 'manager';
+
+    document.addEventListener('DOMContentLoaded', function() {
+        updateTodayDate();
+        loadEmployees();
+        loadCalendar();
+        setupOffDaysModal();
+    });
+
+    function updateTodayDate() {
+        const today = new Date();
+        const dateString = today.toLocaleDateString('en-US', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+        document.getElementById('today-date').textContent = dateString;
+    }
+
+    // Employee Management
+    async function loadEmployees() {
+        try {
+            // Get employee info from template variables
+            const currentEmployeeId = {{ employee_id|default('null')|tojson }};
+            const currentEmployeeRole = {{ employee_role|default('"guest"')|tojson }};
+            
+            const response = await fetch('/api/hr/employees');
+            const data = await response.json();
+            
+            if (data.success) {
+                // If employee is logged in and not admin/manager, only show their own data
+                if (currentEmployeeId && currentEmployeeRole !== 'admin' && currentEmployeeRole !== 'manager') {
+                    employees = data.employees.filter(emp => emp.id === currentEmployeeId && emp.status === 'active');
+                } else {
+                    // Load all employees (for admin/manager or no session)
+                    employees = data.employees.filter(emp => emp.status === 'active');
+                }
+                displayEmployeeOffDays();
+                populateEmployeeSelect();
+            }
+        } catch (error) {
+            console.error('Error loading employees:', error);
+        }
+    }
+    
+    function populateEmployeeSelect() {
+        const select = document.getElementById('off-days-employee-id');
+        if (!select) return;
+        
+        // Clear existing options except the first one
+        select.innerHTML = '<option value="">Select employee</option>';
+        
+        // Add only active employees
+        employees.forEach(emp => {
+            const option = document.createElement('option');
+            option.value = emp.id;
+            option.textContent = `${emp.full_name} (${emp.employee_code})`;
+            select.appendChild(option);
+        });
+    }
+
+    async function displayEmployeeOffDays() {
+        const container = document.getElementById('employee-off-days-list');
+        container.innerHTML = '<div class="text-center py-4"><i class="fas fa-spinner fa-spin text-blue-500"></i><p class="text-sm text-gray-500 mt-2">Loading...</p></div>';
+        
+        if (employees.length === 0) {
+            container.innerHTML = '<p class="text-sm text-gray-500 text-center py-4">No employees found</p>';
+            return;
+        }
+        
+        container.innerHTML = '';
+        
+        // Load off days for each employee
+        for (const employee of employees) {
+            try {
+                const response = await fetch(`/api/off-days/employee/${employee.id}/list`);
+                
+                // Skip if unauthorized (employee trying to view other employees' data)
+                if (response.status === 403) {
+                    continue;
+                }
+                
+                const data = await response.json();
+                
+                // Handle unauthorized errors gracefully
+                if (response.status === 401 || response.status === 403) {
+                    console.warn(`Cannot load off days for employee ${employee.id}: ${data.message || 'Unauthorized'}`);
+                    continue;
+                }
+                
+                const employeeOffDays = data.success && data.off_days ? data.off_days : [];
+                
+                const employeeDiv = createEmployeeOffDayCard(employee, employeeOffDays);
+                container.appendChild(employeeDiv);
+            } catch (error) {
+                // Only log if it's not an authorization issue
+                if (!error.message || !error.message.includes('Unauthorized')) {
+                    console.error(`Error loading off days for employee ${employee.id}:`, error);
+                }
+                // Don't create card if there's an authorization error
+                if (error.message && error.message.includes('Unauthorized')) {
+                    continue;
+                }
+                const employeeDiv = createEmployeeOffDayCard(employee, []);
+                container.appendChild(employeeDiv);
+            }
+        }
+    }
+
+    function createEmployeeOffDayCard(employee, offDays) {
+        const div = document.createElement('div');
+        div.className = 'bg-gray-50 rounded-xl border border-gray-200 overflow-hidden';
+        
+        const initials = employee.full_name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+        
+        // Employee header (clickable to view calendar)
+        const headerDiv = document.createElement('div');
+        headerDiv.className = 'p-3 cursor-pointer hover:bg-gray-100 transition-colors';
+        headerDiv.onclick = () => showEmployeeOffDays(employee.id);
+        
+        headerDiv.innerHTML = `
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg flex-shrink-0">
+                    <span class="text-white font-bold text-sm">${initials}</span>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="font-semibold text-gray-800 text-sm truncate">${employee.full_name}</p>
+                    <p class="text-xs text-gray-600 truncate">${employee.employee_code} • ${employee.role}</p>
+                </div>
+                <i class="fas fa-chevron-right text-gray-400 text-sm"></i>
+            </div>
+        `;
+        div.appendChild(headerDiv);
+        
+        // Off days list
+        const offDaysDiv = document.createElement('div');
+        offDaysDiv.className = 'border-t border-gray-200';
+        
+        if (offDays.length === 0) {
+            offDaysDiv.innerHTML = `
+                <div class="p-3 text-center text-xs text-gray-500">
+                    <i class="fas fa-calendar-times mb-1"></i>
+                    <p>No off days registered</p>
+                </div>
+            `;
+        } else {
+            // Show recent/future off days (last 10)
+            const recentOffDays = offDays.slice(0, 10);
+            recentOffDays.forEach(offDay => {
+                const offDayItem = createOffDayItem(offDay, employee);
+                offDaysDiv.appendChild(offDayItem);
+            });
+            
+            if (offDays.length > 10) {
+                const moreDiv = document.createElement('div');
+                moreDiv.className = 'p-2 text-center text-xs text-gray-500 border-t border-gray-200';
+                moreDiv.textContent = `+${offDays.length - 10} more off days`;
+                offDaysDiv.appendChild(moreDiv);
+            }
+        }
+        
+        div.appendChild(offDaysDiv);
+        return div;
+    }
+    
+    function createOffDayItem(offDay, employee) {
+        const div = document.createElement('div');
+        div.className = 'p-3 border-b border-gray-200 last:border-b-0 hover:bg-gray-50 transition-colors';
+        
+        const offDayColor = getOffDayColor(offDay.off_type || 'personal');
+        const dateStr = offDay.off_date ? new Date(offDay.off_date).toLocaleDateString() : 'N/A';
+        
+        div.innerHTML = `
+            <div class="flex items-start justify-between gap-2">
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-2 mb-1">
+                        <span class="px-2 py-1 rounded text-xs font-medium ${offDayColor}">
+                            ${(offDay.off_type || 'personal').replace('_', ' ')}
+                        </span>
+                        <span class="px-2 py-1 rounded text-xs font-medium ${
+                            offDay.status === 'approved' ? 'bg-green-100 text-green-700' :
+                            offDay.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
+                            offDay.status === 'rejected' ? 'bg-red-100 text-red-700' :
+                            'bg-gray-100 text-gray-700'
+                        }">
+                            ${(offDay.status || 'pending').charAt(0).toUpperCase() + (offDay.status || 'pending').slice(1)}
+                        </span>
+                    </div>
+                    <p class="text-xs text-gray-600 mb-1">${dateStr}</p>
+                    ${offDay.reason ? `<p class="text-xs text-gray-500 truncate" title="${offDay.reason}">${offDay.reason}</p>` : ''}
+                </div>
+                ${isAdminOrManager ? `
+                <div class="flex items-center gap-1 flex-shrink-0">
+                    ${offDay.status !== 'approved' ? `
+                        <button onclick="approveOffDay(${offDay.id}, event)" 
+                                class="p-1.5 text-green-600 hover:bg-green-50 rounded-lg transition-colors" 
+                                title="Approve">
+                            <i class="fas fa-check text-xs"></i>
+                        </button>
+                    ` : ''}
+                    ${offDay.status !== 'rejected' ? `
+                        <button onclick="declineOffDay(${offDay.id}, event)" 
+                                class="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors" 
+                                title="Decline">
+                            <i class="fas fa-times text-xs"></i>
+                        </button>
+                    ` : ''}
+                    <button onclick="editOffDay(${offDay.id}, event)" 
+                            class="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" 
+                            title="Edit">
+                        <i class="fas fa-edit text-xs"></i>
+                    </button>
+                    <button onclick="deleteOffDay(${offDay.id}, event)" 
+                            class="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors" 
+                            title="Delete">
+                        <i class="fas fa-trash text-xs"></i>
+                    </button>
+                </div>
+                ` : ''}
+            </div>
+        `;
+        
+        return div;
+    }
+
+    async function showEmployeeOffDays(employeeId) {
+        currentEmployeeId = employeeId;
+        
+        try {
+            const response = await fetch(`/api/off-days/employee/${employeeId}/stats`);
+            const data = await response.json();
+            
+            if (data.success && data.employee && data.stats) {
+                displayEmployeeInfo(data.employee, data.stats);
+                loadEmployeeCalendar();
+                document.getElementById('employeeOffDayModal').classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+            } else {
+                const errorMsg = data.message || 'Employee data not found';
+                console.error('Error response:', data);
+                showNotification(errorMsg, 'error');
+            }
+        } catch (error) {
+            console.error('Error loading employee off days:', error);
+            showNotification('Error loading employee off days: ' + error.message, 'error');
+        }
+    }
+
+    function displayEmployeeInfo(employee, stats) {
+        const container = document.getElementById('employee-info');
+        const initials = employee.full_name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+        
+        container.innerHTML = `
+            <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                <div class="w-16 h-16 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg flex-shrink-0">
+                    <span class="text-white font-bold text-xl">${initials}</span>
+                </div>
+                <div class="flex-1">
+                    <h4 class="text-lg font-bold text-gray-800">${employee.full_name}</h4>
+                    <p class="text-sm text-gray-600">${employee.employee_code} • ${employee.role}</p>
+                </div>
+                <div class="flex gap-6">
+                    <div class="text-center">
+                        <p class="text-2xl font-bold text-blue-600">${stats.total_off_days || 0}</p>
+                        <p class="text-xs text-gray-600">Total Off Days</p>
+                    </div>
+                    <div class="text-center">
+                        <p class="text-2xl font-bold text-green-600">${stats.approved_off_days || 0}</p>
+                        <p class="text-xs text-gray-600">Approved</p>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    function closeEmployeeOffDayModal() {
+        document.getElementById('employeeOffDayModal').classList.add('hidden');
+        document.body.style.overflow = '';
+        currentEmployeeId = null;
+    }
+
+    async function loadEmployeeCalendar() {
+        if (!currentEmployeeId) return;
+        
+        try {
+            const response = await fetch(`/api/off-days/calendar/${currentYear}/${currentMonth}`);
+            const data = await response.json();
+            
+            if (data.success && data.data) {
+                employeeCalendarData = {};
+                const calendar = data.data.calendar || {};
+                Object.keys(calendar).forEach(date => {
+                    const employeeOffDays = (calendar[date] || []).filter(offDay => offDay.employee_id == currentEmployeeId);
+                    if (employeeOffDays.length > 0) {
+                        employeeCalendarData[date] = employeeOffDays;
+                    }
+                });
+                generateEmployeeCalendar();
+            }
+        } catch (error) {
+            console.error('Error loading employee calendar:', error);
+        }
+    }
+
+    function generateEmployeeCalendar() {
+        const calendarBody = document.getElementById('employee-calendar-body');
+        calendarBody.innerHTML = '';
+        
+        const firstDay = new Date(currentYear, currentMonth - 1, 1);
+        const lastDay = new Date(currentYear, currentMonth, 0);
+        const startDate = new Date(firstDay);
+        startDate.setDate(startDate.getDate() - firstDay.getDay());
+        
+        const endDate = new Date(lastDay);
+        endDate.setDate(endDate.getDate() + (6 - lastDay.getDay()));
+        
+        const currentDate = new Date(startDate);
+        
+        while (currentDate <= endDate) {
+            const dayElement = createEmployeeDayElement(currentDate);
+            calendarBody.appendChild(dayElement);
+            currentDate.setDate(currentDate.getDate() + 1);
+        }
+    }
+
+    function createEmployeeDayElement(date) {
+        const dayDiv = document.createElement('div');
+        dayDiv.className = 'min-h-20 p-2 border-r border-b border-gray-200 bg-white hover:bg-gray-50 transition-colors duration-200';
+        
+        const dayNumber = date.getDate();
+        const dateStr = date.toISOString().split('T')[0];
+        const isCurrentMonth = date.getMonth() === currentMonth - 1;
+        const isToday = date.toDateString() === new Date().toDateString();
+        
+        let dayContent = `
+            <div class="flex items-center justify-between mb-1">
+                <span class="text-xs sm:text-sm font-semibold ${isCurrentMonth ? 'text-gray-900' : 'text-gray-400'} ${isToday ? 'bg-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center' : ''}">${dayNumber}</span>
+            </div>
+        `;
+        
+        if (employeeCalendarData[dateStr]) {
+            const offDays = employeeCalendarData[dateStr];
+            offDays.forEach(offDay => {
+                const offDayColor = getOffDayColor(offDay.off_type);
+                const statusColor = getStatusColor(offDay.status);
+                
+                dayContent += `
+                    <div class="text-xs p-1 rounded mb-1 ${offDayColor} ${statusColor}">
+                        <div class="font-medium text-xs truncate">${(offDay.off_type || 'personal').replace('_', ' ')}</div>
+                        <div class="text-xs opacity-75 hidden sm:block">${offDay.status}</div>
+                    </div>
+                `;
+            });
+        }
+        
+        dayDiv.innerHTML = dayContent;
+        return dayDiv;
+    }
+
+    // Calendar Functions
+    function previousMonth() {
+        currentMonth--;
+        if (currentMonth < 1) {
+            currentMonth = 12;
+            currentYear--;
+        }
+        updateCalendarHeader();
+        loadCalendar();
+        if (currentEmployeeId) {
+            loadEmployeeCalendar();
+        }
+    }
+
+    function nextMonth() {
+        currentMonth++;
+        if (currentMonth > 12) {
+            currentMonth = 1;
+            currentYear++;
+        }
+        updateCalendarHeader();
+        loadCalendar();
+        if (currentEmployeeId) {
+            loadEmployeeCalendar();
+        }
+    }
+
+    function updateCalendarHeader() {
+        const monthNames = [
+            'January', 'February', 'March', 'April', 'May', 'June',
+            'July', 'August', 'September', 'October', 'November', 'December'
+        ];
+        document.getElementById('current-month-year').textContent = 
+            `${monthNames[currentMonth - 1]} ${currentYear}`;
+    }
+
+    async function loadCalendar() {
+        try {
+            const response = await fetch(`/api/off-days/calendar/${currentYear}/${currentMonth}`);
+            const data = await response.json();
+            
+            if (data.success && data.data) {
+                calendarData = data.data;
+                if (!calendarData.off_days) {
+                    calendarData.off_days = [];
+                }
+                if (!calendarData.employees) {
+                    calendarData.employees = [];
+                }
+                generateCalendar();
+            } else {
+                console.error('Error loading calendar:', data.message);
+                calendarData = { off_days: [], employees: [], calendar: {} };
+                generateCalendar();
+            }
+        } catch (error) {
+            console.error('Error loading calendar:', error);
+            calendarData = { off_days: [], employees: [], calendar: {} };
+            generateCalendar();
+        }
+    }
+
+    function refreshCalendar() {
+        loadCalendar();
+        showNotification('Calendar refreshed', 'success');
+    }
+
+    function generateCalendar() {
+        const calendarBody = document.getElementById('calendar-body');
+        calendarBody.innerHTML = '';
+        
+        const firstDay = new Date(currentYear, currentMonth - 1, 1);
+        const lastDay = new Date(currentYear, currentMonth, 0);
+        const startDate = new Date(firstDay);
+        startDate.setDate(startDate.getDate() - firstDay.getDay());
+        
+        const endDate = new Date(lastDay);
+        endDate.setDate(endDate.getDate() + (6 - lastDay.getDay()));
+        
+        const currentDate = new Date(startDate);
+        
+        while (currentDate <= endDate) {
+            const dayElement = createDayElement(currentDate);
+            calendarBody.appendChild(dayElement);
+            currentDate.setDate(currentDate.getDate() + 1);
+        }
+    }
+
+    function createDayElement(date) {
+        const dayDiv = document.createElement('div');
+        dayDiv.className = 'min-h-20 sm:min-h-24 p-2 border-r border-b border-gray-200 bg-white hover:bg-gray-50 transition-all duration-200 cursor-pointer';
+        
+        const dayNumber = date.getDate();
+        const dateStr = date.toISOString().split('T')[0];
+        const isCurrentMonth = date.getMonth() === currentMonth - 1;
+        const isToday = date.toDateString() === new Date().toDateString();
+        
+        dayDiv.onclick = () => showDateInfo(dateStr, date);
+        
+        let dayContent = `
+            <div class="flex items-center justify-between mb-1">
+                <span class="text-xs sm:text-sm font-semibold ${isCurrentMonth ? 'text-gray-900' : 'text-gray-400'} ${isToday ? 'bg-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center' : ''}">${dayNumber}</span>
+            </div>
+        `;
+        
+        const offDays = calendarData.off_days?.filter(offDay => {
+            if (offDay.date) {
+                const offDayDate = new Date(offDay.date);
+                return offDayDate.toISOString().split('T')[0] === dateStr;
+            }
+            return false;
+        }) || [];
+        
+        if (offDays.length > 0) {
+            offDays.forEach(offDay => {
+                const offDayColor = getOffDayColor(offDay.off_type || 'personal');
+                const statusColor = getStatusColor(offDay.status || 'pending');
+                
+                dayContent += `
+                    <div class="text-xs p-1 rounded mb-1 ${offDayColor} ${statusColor}" 
+                         title="${offDay.full_name || 'Employee'} - ${(offDay.off_type || 'personal').replace('_', ' ')} (${offDay.status || 'pending'})">
+                        <div class="font-medium truncate text-xs">${(offDay.full_name || 'Employee').split(' ')[0]}</div>
+                        <div class="text-xs opacity-75 hidden sm:block">${(offDay.off_type || 'personal').replace('_', ' ')}</div>
+                    </div>
+                `;
+            });
+        }
+        
+        dayDiv.innerHTML = dayContent;
+        return dayDiv;
+    }
+
+    function getOffDayColor(offType) {
+        const colors = {
+            'vacation': 'bg-blue-100 text-blue-800',
+            'sick_leave': 'bg-red-100 text-red-800',
+            'personal': 'bg-green-100 text-green-800',
+            'holiday': 'bg-purple-100 text-purple-800',
+            'emergency': 'bg-orange-100 text-orange-800',
+            'other': 'bg-gray-100 text-gray-800'
+        };
+        return colors[offType] || 'bg-gray-100 text-gray-800';
+    }
+
+    function getStatusColor(status) {
+        const colors = {
+            'approved': 'border-l-2 border-green-500',
+            'pending': 'border-l-2 border-yellow-500',
+            'rejected': 'border-l-2 border-red-500',
+            'cancelled': 'border-l-2 border-gray-500'
+        };
+        return colors[status] || 'border-l-2 border-gray-500';
+    }
+
+    // Date Information Modal Functions
+    function showDateInfo(dateStr, date) {
+        const dateHeader = document.getElementById('date-header');
+        const dateOffDays = document.getElementById('date-off-days');
+        const noOffDays = document.getElementById('no-off-days');
+        
+        const formattedDate = date.toLocaleDateString('en-US', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+        
+        dateHeader.innerHTML = `
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                    <i class="fas fa-calendar-day text-white text-xl"></i>
+                </div>
+                <div>
+                    <h4 class="text-xl font-bold">${formattedDate}</h4>
+                    <p class="text-white/80 text-sm">Click on any date to view details</p>
+                </div>
+            </div>
+        `;
+        
+        const offDays = calendarData.off_days?.filter(offDay => {
+            if (offDay.date) {
+                const offDayDate = new Date(offDay.date);
+                return offDayDate.toISOString().split('T')[0] === dateStr;
+            }
+            return false;
+        }) || [];
+        
+        if (offDays.length > 0) {
+            dateOffDays.innerHTML = '';
+            noOffDays.classList.add('hidden');
+            
+            offDays.forEach(offDay => {
+                const offDayDiv = document.createElement('div');
+                const offDayColor = getOffDayColor(offDay.off_type || 'personal');
+                const statusColor = getStatusColor(offDay.status || 'pending');
+                
+                offDayDiv.className = 'bg-white rounded-xl p-4 border border-gray-200 shadow-sm hover:shadow-md transition-shadow';
+                
+                const initials = (offDay.full_name || 'Employee').split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+                
+                offDayDiv.innerHTML = `
+                    <div class="flex items-start justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl flex items-center justify-center flex-shrink-0">
+                                <span class="text-white font-bold text-sm">${initials}</span>
+                            </div>
+                            <div>
+                                <h5 class="font-semibold text-gray-800">${offDay.full_name || 'Employee'}</h5>
+                                <p class="text-xs text-gray-600">${offDay.employee_code || 'N/A'} • ${offDay.role || 'Employee'}</p>
+                            </div>
+                        </div>
+                        <div class="flex flex-col items-end gap-2">
+                            <span class="px-3 py-1 rounded-lg text-xs font-medium ${offDayColor}">
+                                ${(offDay.off_type || 'personal').replace('_', ' ').charAt(0).toUpperCase() + (offDay.off_type || 'personal').replace('_', ' ').slice(1)}
+                            </span>
+                            <span class="px-3 py-1 rounded-lg text-xs font-medium ${statusColor.replace('border-l-2', 'bg-opacity-20').replace('border-', 'bg-').replace('500', '100')} ${statusColor.replace('border-l-2', '').replace('border-', 'text-').replace('500', '600')}">
+                                ${(offDay.status || 'pending').charAt(0).toUpperCase() + (offDay.status || 'pending').slice(1)}
+                            </span>
+                        </div>
+                    </div>
+                    ${offDay.reason ? `
+                        <div class="mt-3 pt-3 border-t border-gray-100">
+                            <p class="text-sm text-gray-600">
+                                <span class="font-medium">Reason:</span> ${offDay.reason}
+                            </p>
+                        </div>
+                    ` : ''}
+                `;
+                
+                dateOffDays.appendChild(offDayDiv);
+            });
+        } else {
+            dateOffDays.innerHTML = '';
+            noOffDays.classList.remove('hidden');
+        }
+        
+        document.getElementById('dateInfoModal').classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeDateInfoModal() {
+        document.getElementById('dateInfoModal').classList.add('hidden');
+        document.body.style.overflow = '';
+    }
+
+    // Modal close on outside click
+    document.getElementById('dateInfoModal').addEventListener('click', function(e) {
+        if (e.target === this) closeDateInfoModal();
+    });
+
+    document.getElementById('employeeOffDayModal').addEventListener('click', function(e) {
+        if (e.target === this) closeEmployeeOffDayModal();
+    });
+
+    // Off Day Actions Functions
+    async function approveOffDay(offDayId, event) {
+        if (event) event.stopPropagation();
+        
+        try {
+            const response = await fetch(`/api/off-days/${offDayId}/approve`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            });
+            const data = await response.json();
+            
+            if (data.success) {
+                showNotification('Off day approved successfully', 'success');
+                await displayEmployeeOffDays(); // Refresh list
+                await loadCalendar(); // Refresh calendar
+            } else {
+                showNotification(data.message || 'Failed to approve off day', 'error');
+            }
+        } catch (error) {
+            console.error('Error approving off day:', error);
+            showNotification('Error approving off day', 'error');
+        }
+    }
+    
+    async function declineOffDay(offDayId, event) {
+        if (event) event.stopPropagation();
+        
+        try {
+            const response = await fetch(`/api/off-days/${offDayId}/decline`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            });
+            const data = await response.json();
+            
+            if (data.success) {
+                showNotification('Off day declined successfully', 'success');
+                await displayEmployeeOffDays(); // Refresh list
+                await loadCalendar(); // Refresh calendar
+            } else {
+                showNotification(data.message || 'Failed to decline off day', 'error');
+            }
+        } catch (error) {
+            console.error('Error declining off day:', error);
+            showNotification('Error declining off day', 'error');
+        }
+    }
+    
+    async function editOffDay(offDayId, event) {
+        if (event) event.stopPropagation();
+        
+        try {
+            // Fetch off day details
+            const response = await fetch(`/api/off-days/${offDayId}`);
+            const data = await response.json();
+            
+            if (data.success && data.off_day) {
+                showEditOffDayModal(data.off_day);
+            } else {
+                showNotification(data.message || 'Failed to load off day details', 'error');
+            }
+        } catch (error) {
+            console.error('Error loading off day:', error);
+            showNotification('Error loading off day details', 'error');
+        }
+    }
+    
+    async function deleteOffDay(offDayId, event) {
+        if (event) event.stopPropagation();
+        
+        if (!confirm('Are you sure you want to delete this off day? This action cannot be undone.')) {
+            return;
+        }
+        
+        try {
+            const response = await fetch(`/api/off-days/${offDayId}`, {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' }
+            });
+            const data = await response.json();
+            
+            if (data.success) {
+                showNotification('Off day deleted successfully', 'success');
+                await displayEmployeeOffDays(); // Refresh list
+                await loadCalendar(); // Refresh calendar
+            } else {
+                showNotification(data.message || 'Failed to delete off day', 'error');
+            }
+        } catch (error) {
+            console.error('Error deleting off day:', error);
+            showNotification('Error deleting off day', 'error');
+        }
+    }
+    
+    // Edit Off Day Modal Functions
+    async function showEditOffDayModal(offDay) {
+        const modal = document.getElementById('edit-off-day-modal');
+        if (!modal) return;
+        
+        document.getElementById('edit-off-day-id').value = offDay.id;
+        document.getElementById('edit-off-day-employee-name').value = offDay.full_name || offDay.employee_name || 'Employee';
+        document.getElementById('edit-off-day-start-date').value = offDay.off_date || '';
+        document.getElementById('edit-off-day-end-date').value = offDay.off_date || ''; // Default to same date, will try to find range
+        
+        // Try to find consecutive days with same type/status/reason to determine date range
+        try {
+            const response = await fetch(`/api/off-days/${offDay.id}/range`);
+            const data = await response.json();
+            
+            if (data.success && data.start_date && data.end_date) {
+                document.getElementById('edit-off-day-start-date').value = data.start_date;
+                document.getElementById('edit-off-day-end-date').value = data.end_date;
+            }
+        } catch (error) {
+            console.error('Error fetching off day range:', error);
+            // If error, just use the single date for both start and end
+        }
+        
+        document.getElementById('edit-off-day-type').value = offDay.off_type || 'personal';
+        document.getElementById('edit-off-day-status').value = offDay.status || 'pending';
+        document.getElementById('edit-off-day-reason').value = offDay.reason || '';
+        
+        modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    }
+    
+    function closeEditOffDayModal() {
+        const modal = document.getElementById('edit-off-day-modal');
+        if (!modal) return;
+        
+        modal.classList.add('hidden');
+        document.body.style.overflow = '';
+        document.getElementById('edit-off-day-form').reset();
+    }
+    
+    document.getElementById('edit-off-day-modal-close').onclick = closeEditOffDayModal;
+    document.getElementById('edit-off-day-cancel-btn').onclick = closeEditOffDayModal;
+    document.getElementById('edit-off-day-modal').addEventListener('click', function(e) {
+        if (e.target === this) closeEditOffDayModal();
+    });
+    
+    document.getElementById('edit-off-day-form').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const offDayId = document.getElementById('edit-off-day-id').value;
+        const startDate = document.getElementById('edit-off-day-start-date').value;
+        const endDate = document.getElementById('edit-off-day-end-date').value;
+        const offType = document.getElementById('edit-off-day-type').value;
+        const status = document.getElementById('edit-off-day-status').value;
+        const reason = document.getElementById('edit-off-day-reason').value;
+        
+        if (!startDate || !endDate || !offType) {
+            showNotification('Please fill in all required fields', 'error');
+            return;
+        }
+        
+        if (new Date(startDate) > new Date(endDate)) {
+            showNotification('End date must be after start date', 'error');
+            return;
+        }
+        
+        // First, get the employee_id from the off day
+        try {
+            const getResponse = await fetch(`/api/off-days/${offDayId}`);
+            const getData = await getResponse.json();
+            
+            if (!getData.success || !getData.off_day) {
+                showNotification('Failed to load off day details', 'error');
+                return;
+            }
+            
+            const employeeId = getData.off_day.employee_id;
+            
+            // Use the register-range endpoint to update the date range
+            const payload = {
+                employee_id: employeeId,
+                start_date: startDate,
+                end_date: endDate,
+                off_type: offType,
+                status: status,
+                reason: reason || null
+            };
+            
+            const response = await fetch('/api/off-days/register-range', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                showNotification(data.message || 'Off days updated successfully', 'success');
+                closeEditOffDayModal();
+                await displayEmployeeOffDays(); // Refresh list
+                await loadCalendar(); // Refresh calendar
+            } else {
+                showNotification(data.message || 'Failed to update off days', 'error');
+            }
+        } catch (error) {
+            console.error('Error updating off days:', error);
+            showNotification('Error updating off days', 'error');
+        }
+    });
+
+    // Register Off Days Modal Functions
+    function setupOffDaysModal() {
+        const openBtn = document.getElementById('open-off-days-modal');
+        const closeBtn = document.getElementById('register-off-days-modal-close');
+        const cancelBtn = document.getElementById('register-off-days-cancel-btn');
+        const modal = document.getElementById('register-off-days-modal');
+        const form = document.getElementById('register-off-days-form');
+        
+        if (openBtn) {
+            openBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                openOffDaysModal();
+            });
+        }
+        
+        if (closeBtn) {
+            closeBtn.addEventListener('click', closeOffDaysModal);
+        }
+        
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', closeOffDaysModal);
+        }
+        
+        if (modal) {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) closeOffDaysModal();
+            });
+        }
+        
+        // Check for existing off days when dates change
+        const startDateInput = document.getElementById('off-days-start-date');
+        const endDateInput = document.getElementById('off-days-end-date');
+        const employeeSelect = document.getElementById('off-days-employee-id');
+        
+        if (startDateInput && endDateInput && employeeSelect) {
+            const checkExisting = () => {
+                const employeeId = employeeSelect.value;
+                const startDate = startDateInput.value;
+                const endDate = endDateInput.value;
+                
+                if (employeeId && startDate && endDate) {
+                    checkExistingOffDays(employeeId, startDate, endDate);
+                } else {
+                    document.getElementById('existing-off-days-warning').classList.add('hidden');
+                }
+            };
+            
+            startDateInput.addEventListener('change', checkExisting);
+            endDateInput.addEventListener('change', checkExisting);
+            employeeSelect.addEventListener('change', checkExisting);
+        }
+        
+        // Form submission
+        if (form) {
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                await submitOffDaysForm();
+            });
+        }
+    }
+    
+    function openOffDaysModal() {
+        const modal = document.getElementById('register-off-days-modal');
+        if (!modal) return;
+        
+        // Reset form
+        document.getElementById('register-off-days-form').reset();
+        document.getElementById('existing-off-days-warning').classList.add('hidden');
+        document.getElementById('register-off-days-title').textContent = 'Register Off Days';
+        
+        // Set default status to approved
+        document.getElementById('off-days-status').value = 'approved';
+        
+        modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    }
+    
+    function closeOffDaysModal() {
+        const modal = document.getElementById('register-off-days-modal');
+        if (!modal) return;
+        
+        modal.classList.add('hidden');
+        document.body.style.overflow = '';
+        document.getElementById('register-off-days-form').reset();
+        document.getElementById('existing-off-days-warning').classList.add('hidden');
+    }
+    
+    async function checkExistingOffDays(employeeId, startDate, endDate) {
+        try {
+            const response = await fetch(`/api/off-days/check-range?employee_id=${employeeId}&start_date=${startDate}&end_date=${endDate}`);
+            const data = await response.json();
+            
+            if (data.success && data.existing_off_days && data.existing_off_days.length > 0) {
+                const warningDiv = document.getElementById('existing-off-days-warning');
+                const listDiv = document.getElementById('existing-off-days-list');
+                
+                warningDiv.classList.remove('hidden');
+                listDiv.innerHTML = '';
+                
+                data.existing_off_days.forEach(offDay => {
+                    const dateStr = new Date(offDay.off_date).toLocaleDateString();
+                    const div = document.createElement('div');
+                    div.innerHTML = `• ${dateStr}: ${offDay.off_type.replace('_', ' ')} (${offDay.status})`;
+                    listDiv.appendChild(div);
+                });
+                
+                // Pre-fill form with first existing off day's data
+                const firstOffDay = data.existing_off_days[0];
+                document.getElementById('off-days-type').value = firstOffDay.off_type || 'personal';
+                document.getElementById('off-days-status').value = firstOffDay.status || 'approved';
+                document.getElementById('off-days-reason').value = firstOffDay.reason || '';
+                document.getElementById('register-off-days-title').textContent = 'Edit Off Days';
+            } else {
+                document.getElementById('existing-off-days-warning').classList.add('hidden');
+                document.getElementById('register-off-days-title').textContent = 'Register Off Days';
+            }
+        } catch (error) {
+            console.error('Error checking existing off days:', error);
+        }
+    }
+    
+    async function submitOffDaysForm() {
+        const employeeId = document.getElementById('off-days-employee-id').value;
+        const startDate = document.getElementById('off-days-start-date').value;
+        const endDate = document.getElementById('off-days-end-date').value;
+        const offType = document.getElementById('off-days-type').value;
+        const status = document.getElementById('off-days-status').value;
+        const reason = document.getElementById('off-days-reason').value;
+        
+        if (!employeeId || !startDate || !endDate || !offType) {
+            showNotification('Please fill in all required fields', 'error');
+            return;
+        }
+        
+        if (new Date(startDate) > new Date(endDate)) {
+            showNotification('End date must be after start date', 'error');
+            return;
+        }
+        
+        const payload = {
+            employee_id: parseInt(employeeId),
+            start_date: startDate,
+            end_date: endDate,
+            off_type: offType,
+            status: status,
+            reason: reason || null
+        };
+        
+        try {
+            const response = await fetch('/api/off-days/register-range', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                showNotification(data.message || 'Off days registered successfully', 'success');
+                closeOffDaysModal();
+                await loadCalendar(); // Refresh calendar
+                if (currentEmployeeId) {
+                    await loadEmployeeCalendar(); // Refresh employee calendar if open
+                }
+            } else {
+                showNotification(data.message || 'Failed to register off days', 'error');
+            }
+        } catch (error) {
+            console.error('Error submitting off days:', error);
+            showNotification('Error registering off days', 'error');
+        }
+    }
+
+    // Notification System
+    function showNotification(message, type = 'info') {
+        const notification = document.createElement('div');
+        notification.className = `fixed top-4 right-4 z-50 p-4 rounded-2xl shadow-2xl transition-all duration-300 transform translate-x-full ${
+            type === 'success' ? 'bg-gradient-to-r from-green-500 to-green-600 text-white' :
+            type === 'error' ? 'bg-gradient-to-r from-red-500 to-red-600 text-white' :
+            type === 'warning' ? 'bg-gradient-to-r from-yellow-500 to-yellow-600 text-white' :
+            'bg-gradient-to-r from-blue-500 to-blue-600 text-white'
+        }`;
+        notification.innerHTML = `
+            <div class="flex items-center space-x-3">
+                <div class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+                    <i class="fas ${type === 'success' ? 'fa-check' : type === 'error' ? 'fa-times' : type === 'warning' ? 'fa-exclamation-triangle' : 'fa-info'} text-sm"></i>
+                </div>
+                <span class="font-semibold">${message}</span>
+            </div>
+        `;
+        
+        document.body.appendChild(notification);
+        setTimeout(() => notification.classList.remove('translate-x-full'), 100);
+        setTimeout(() => {
+            notification.classList.add('translate-x-full');
+            setTimeout(() => notification.remove(), 300);
+        }, 3000);
+    }
+</script>
+{% endblock %}

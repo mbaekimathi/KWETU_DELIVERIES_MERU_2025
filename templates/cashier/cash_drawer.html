@@ -1,0 +1,1240 @@
+{% extends "role_base.html" %}
+
+{% block title %}Cash Drawer Management{% endblock %}
+
+{% block sidebar_icon %}cash-register{% endblock %}
+{% block sidebar_title %}Cashier Panel{% endblock %}
+
+{% block sidebar_nav %}
+<a href="/pos" class="nav-item flex items-center px-4 py-4 text-white rounded-2xl hover:bg-white/20 transition-all duration-200 group">
+    <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center mr-4 group-hover:bg-white/30 transition-colors duration-200">
+        <i class="fas fa-cash-register text-white text-lg"></i>
+    </div>
+    <div>
+        <p class="font-semibold">Point of Sale</p>
+        <p class="text-xs text-white/70">Process orders</p>
+    </div>
+</a>
+
+<a href="/cashier/cash-drawer" class="nav-item flex items-center px-4 py-4 text-white rounded-2xl bg-white/20 transition-all duration-200 group">
+    <div class="w-10 h-10 bg-white/30 rounded-xl flex items-center justify-center mr-4 transition-colors duration-200">
+        <i class="fas fa-cash-register text-white text-lg"></i>
+    </div>
+    <div>
+        <p class="font-semibold">Cash Drawer Management</p>
+        <p class="text-xs text-white/70">Manage cash drawer</p>
+    </div>
+</a>
+
+<a href="/cashier/stock-management" class="nav-item flex items-center px-4 py-4 text-white rounded-2xl hover:bg-white/20 transition-all duration-200 group">
+    <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center mr-4 group-hover:bg-white/30 transition-colors duration-200">
+        <i class="fas fa-boxes text-white text-lg"></i>
+    </div>
+    <div>
+        <p class="font-semibold">Stock Management</p>
+        <p class="text-xs text-white/70">Manage inventory</p>
+    </div>
+</a>
+
+<a href="/cashier/receipt-confirmation" class="nav-item flex items-center px-4 py-4 text-white rounded-2xl hover:bg-white/20 transition-all duration-200 group">
+    <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center mr-4 group-hover:bg-white/30 transition-colors duration-200">
+        <i class="fas fa-receipt text-white text-lg"></i>
+    </div>
+    <div>
+        <p class="font-semibold">Receipt Confirmation</p>
+        <p class="text-xs text-white/70">Confirm receipts</p>
+    </div>
+</a>
+
+<a href="/cashier/payments" class="nav-item flex items-center px-4 py-4 text-white rounded-2xl hover:bg-white/20 transition-all duration-200 group">
+    <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center mr-4 group-hover:bg-white/30 transition-colors duration-200">
+        <i class="fas fa-credit-card text-white text-lg"></i>
+    </div>
+    <div>
+        <p class="font-semibold">Payments</p>
+        <p class="text-xs text-white/70">Employee sales overview</p>
+    </div>
+</a>
+
+<a href="/employee/off-days" class="nav-item flex items-center px-4 py-4 text-white rounded-2xl hover:bg-white/20 transition-all duration-200 group">
+    <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center mr-4 group-hover:bg-white/30 transition-colors duration-200">
+        <i class="fas fa-calendar-times text-white text-lg"></i>
+    </div>
+    <div>
+        <p class="font-semibold">My Off Days</p>
+        <p class="text-xs text-white/70">View time off</p>
+    </div>
+</a>
+{% endblock %}
+
+{% block extra_styles %}
+<style>
+    .scrollbar-thin {
+        scrollbar-width: thin;
+    }
+    
+    .scrollbar-thumb-gray-300::-webkit-scrollbar-thumb {
+        background-color: #d1d5db;
+        border-radius: 0.5rem;
+    }
+    
+    .scrollbar-track-gray-100::-webkit-scrollbar-track {
+        background-color: #f3f4f6;
+    }
+    
+    .scrollbar-thin::-webkit-scrollbar {
+        width: 6px;
+    }
+    
+    /* Responsive font sizes for larger screens */
+    @media (max-width: 1536px) {
+        .text-responsive-xl { font-size: 1.25rem; }
+        .text-responsive-lg { font-size: 1.125rem; }
+        .text-responsive-base { font-size: 1rem; }
+        .text-responsive-sm { font-size: 0.875rem; }
+        .text-responsive-xs { font-size: 0.75rem; }
+    }
+    
+    @media (max-width: 1280px) {
+        .text-responsive-xl { font-size: 1.125rem; }
+        .text-responsive-lg { font-size: 1rem; }
+        .text-responsive-base { font-size: 0.875rem; }
+        .text-responsive-sm { font-size: 0.75rem; }
+        .text-responsive-xs { font-size: 0.625rem; }
+    }
+    
+    /* Ensure buttons have minimum touch target size on mobile */
+    @media (max-width: 768px) {
+        button {
+            min-height: 44px;
+        }
+    }
+    
+    /* Prevent horizontal scroll */
+    body {
+        overflow-x: hidden;
+        width: 100%;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+    <!-- Container with responsive padding and max width -->
+    <div class="w-full max-w-[1920px] mx-auto px-2 sm:px-4 md:px-6 lg:px-8 py-2 sm:py-4 md:py-6">
+        <!-- Header Section -->
+        <div class="mb-3 sm:mb-4 md:mb-6">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+                <div>
+                    <h1 class="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-gray-800 mb-1 sm:mb-2">Cash Drawer Management</h1>
+                    <p class="text-xs sm:text-sm md:text-base text-gray-600">Manage your cash drawer operations and track transactions</p>
+        </div>
+                <div class="flex items-center gap-2 sm:gap-3">
+                    <div class="text-right">
+                        <p class="text-xs sm:text-sm text-gray-500">Current Time</p>
+                        <p class="text-sm sm:text-base font-semibold text-gray-700" id="current-time"></p>
+            </div>
+                    <div class="px-2 sm:px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs sm:text-sm font-medium">
+                        {{ session.employee_role.title() }}
+        </div>
+    </div>
+</div>
+
+            <!-- Session Status Section -->
+            <div id="session-status" class="mt-3 sm:mt-4 p-3 sm:p-4 bg-blue-50 border border-blue-200 rounded-lg">
+        <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        <i class="fas fa-circle text-green-500 text-sm" id="session-indicator"></i>
+                        <span class="text-sm sm:text-base font-medium text-gray-700" id="session-status-text">Loading session status...</span>
+                </div>
+                    <div class="text-xs sm:text-sm text-gray-600" id="session-details"></div>
+        </div>
+    </div>
+
+            <!-- No Active Session Callout -->
+            <div id="no-session-callout" class="hidden mt-3 sm:mt-4 p-3 sm:p-4 rounded-lg border border-amber-200 bg-amber-50">
+                <div class="flex items-start gap-3">
+                    <div class="mt-1 text-amber-600">
+                        <i class="fas fa-info-circle"></i>
+                </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm sm:text-base font-medium text-amber-800">No active session</p>
+                        <p class="text-xs sm:text-sm text-amber-700">Start a new cash drawer session to begin. The page will follow your session context automatically.</p>
+            </div>
+                    <button id="callout-start-session" class="px-3 py-2 bg-amber-600 text-white rounded-md text-xs sm:text-sm hover:bg-amber-700">Start Cash</button>
+        </div>
+    </div>
+
+            <!-- Date Filter Section -->
+            <div class="mt-3 sm:mt-4 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                <div class="flex items-center gap-2">
+                    <label for="date-filter" class="text-sm sm:text-base font-medium text-gray-700">Filter by Date:</label>
+                    <input type="date" id="date-filter" class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base">
+                </div>
+                <div class="flex items-center gap-2">
+                    <button id="today-btn" class="px-3 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors text-sm font-medium">
+                        Today
+                    </button>
+                    <button id="yesterday-btn" class="px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm font-medium">
+                        Yesterday
+                    </button>
+            </div>
+        </div>
+    </div>
+
+        <!-- Dashboard Cards -->
+        <div id="cards-wrapper" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 md:gap-5 lg:gap-6 mb-3 sm:mb-4 md:mb-6">
+    <!-- Current Balance Card -->
+            <div class="bg-white/80 backdrop-blur-sm rounded-xl sm:rounded-2xl shadow-lg border border-white/20 p-3 sm:p-4 md:p-5 lg:p-6 min-h-[120px] sm:min-h-[140px] flex flex-col justify-between">
+                <div class="flex items-center justify-between mb-2 sm:mb-3">
+                    <div class="p-2 sm:p-3 bg-green-100 rounded-lg">
+                        <i class="fas fa-wallet text-green-600 text-lg sm:text-xl md:text-2xl"></i>
+                </div>
+                    <span class="text-xs sm:text-sm text-gray-500 font-medium">Current Balance</span>
+            </div>
+                <div>
+                    <p class="text-lg sm:text-xl md:text-2xl font-bold text-gray-800 truncate" id="current-balance">shs 0.00</p>
+                    <p class="text-xs sm:text-sm text-gray-600 truncate">Available cash</p>
+    </div>
+</div>
+
+    <!-- Today's Sales Card -->
+            <div class="bg-white/80 backdrop-blur-sm rounded-xl sm:rounded-2xl shadow-lg border border-white/20 p-3 sm:p-4 md:p-5 lg:p-6 min-h-[120px] sm:min-h-[140px] flex flex-col justify-between">
+                <div class="flex items-center justify-between mb-2 sm:mb-3">
+                    <div class="p-2 sm:p-3 bg-blue-100 rounded-lg">
+                        <i class="fas fa-chart-line text-blue-600 text-lg sm:text-xl md:text-2xl"></i>
+                </div>
+                    <span class="text-xs sm:text-sm text-gray-500 font-medium">Today's Sales</span>
+                </div>
+                <div>
+                    <p class="text-lg sm:text-xl md:text-2xl font-bold text-gray-800 truncate" id="today-sales">shs 0.00</p>
+                    <p class="text-xs sm:text-sm text-gray-600 truncate">Cash sales only</p>
+    </div>
+</div>
+
+            <!-- Transactions Card -->
+            <div class="bg-white/80 backdrop-blur-sm rounded-xl sm:rounded-2xl shadow-lg border border-white/20 p-3 sm:p-4 md:p-5 lg:p-6 min-h-[120px] sm:min-h-[140px] flex flex-col justify-between">
+                <div class="flex items-center justify-between mb-2 sm:mb-3">
+                    <div class="p-2 sm:p-3 bg-purple-100 rounded-lg">
+                        <i class="fas fa-exchange-alt text-purple-600 text-lg sm:text-xl md:text-2xl"></i>
+        </div>
+                    <span class="text-xs sm:text-sm text-gray-500 font-medium">Transactions</span>
+                        </div>
+                        <div>
+                    <p class="text-lg sm:text-xl md:text-2xl font-bold text-gray-800 truncate" id="transaction-count">0</p>
+                    <p class="text-xs sm:text-sm text-gray-600 truncate">Today's count</p>
+                        </div>
+                    </div>
+
+            <!-- Pending Card -->
+            <div class="bg-white/80 backdrop-blur-sm rounded-xl sm:rounded-2xl shadow-lg border border-white/20 p-3 sm:p-4 md:p-5 lg:p-6 min-h-[120px] sm:min-h-[140px] flex flex-col justify-between">
+                <div class="flex items-center justify-between mb-2 sm:mb-3">
+                    <div class="p-2 sm:p-3 bg-orange-100 rounded-lg">
+                        <i class="fas fa-clock text-orange-600 text-lg sm:text-xl md:text-2xl"></i>
+                </div>
+                    <span class="text-xs sm:text-sm text-gray-500 font-medium">Pending</span>
+                        </div>
+                        <div>
+                    <p class="text-lg sm:text-xl md:text-2xl font-bold text-gray-800 truncate" id="pending-count">0</p>
+                    <p class="text-xs sm:text-sm text-gray-600 truncate">Awaiting approval</p>
+                        </div>
+                    </div>
+</div>
+
+        <!-- Variance Alert (Hidden by default) -->
+        <div id="variance-alert" class="hidden bg-red-50 border border-red-200 rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-6 mb-3 sm:mb-4 md:mb-6">
+            <div class="flex items-center gap-3 sm:gap-4">
+                <div class="p-2 sm:p-3 bg-red-100 rounded-lg flex-shrink-0">
+                    <i class="fas fa-exclamation-triangle text-red-600 text-lg sm:text-xl md:text-2xl"></i>
+                        </div>
+                <div class="flex-1 min-w-0">
+                    <h3 class="text-sm sm:text-base md:text-lg font-semibold text-red-800 mb-1">Cash Variance Detected</h3>
+                    <p class="text-xs sm:text-sm text-red-700 break-words" id="variance-message"></p>
+                        </div>
+                    </div>
+</div>
+
+        <!-- Main Content - Stacked Layout -->
+        <div id="main-session-content" class="space-y-4 sm:space-y-5 md:space-y-6 lg:space-y-8 transition-opacity">
+    <!-- Cash Drawer Operations -->
+            <div class="bg-white/80 backdrop-blur-sm rounded-xl sm:rounded-2xl shadow-lg border border-white/20 overflow-hidden">
+                <div class="p-3 sm:p-4 md:p-5 lg:p-6 border-b border-gray-200/50">
+                    <h2 class="text-base sm:text-lg md:text-xl font-semibold text-gray-800">Cash Drawer Operations</h2>
+                    <p class="text-xs sm:text-sm text-gray-600 mt-1">Manage your cash drawer activities</p>
+                        </div>
+                <div class="p-3 sm:p-4 md:p-5 lg:p-6">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-2.5 sm:gap-3 md:gap-4">
+                        <!-- Starting Cash Button -->
+                        <button id="starting-cash-btn" class="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white rounded-xl sm:rounded-2xl p-3 sm:p-4 transition-all duration-200 transform hover:scale-105 hover:shadow-lg min-h-[70px] sm:min-h-[80px] flex flex-col sm:flex-row items-center justify-center sm:justify-between">
+                            <div class="text-center sm:text-left">
+                                <i class="fas fa-play-circle text-lg sm:text-xl mb-1 sm:mb-2"></i>
+                                <p class="text-xs sm:text-sm font-semibold">Start Cash</p>
+                                <p class="text-xs text-green-100">Set opening amount</p>
+                        </div>
+                            <i class="fas fa-chevron-right text-green-200 text-xs sm:text-sm flex-shrink-0 mt-1 sm:mt-0"></i>
+                </button>
+
+                <!-- Cash In Button -->
+                        <button id="cash-in-btn" class="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl sm:rounded-2xl p-3 sm:p-4 transition-all duration-200 transform hover:scale-105 hover:shadow-lg min-h-[70px] sm:min-h-[80px] flex flex-col sm:flex-row items-center justify-center sm:justify-between">
+                            <div class="text-center sm:text-left">
+                                <i class="fas fa-plus-circle text-lg sm:text-xl mb-1 sm:mb-2"></i>
+                                <p class="text-xs sm:text-sm font-semibold">Cash In</p>
+                                <p class="text-xs text-blue-100">Add money to drawer</p>
+                        </div>
+                            <i class="fas fa-chevron-right text-blue-200 text-xs sm:text-sm flex-shrink-0 mt-1 sm:mt-0"></i>
+                </button>
+
+                <!-- Cash Out Button -->
+                        <button id="cash-out-btn" class="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-xl sm:rounded-2xl p-3 sm:p-4 transition-all duration-200 transform hover:scale-105 hover:shadow-lg min-h-[70px] sm:min-h-[80px] flex flex-col sm:flex-row items-center justify-center sm:justify-between">
+                            <div class="text-center sm:text-left">
+                                <i class="fas fa-minus-circle text-lg sm:text-xl mb-1 sm:mb-2"></i>
+                                <p class="text-xs sm:text-sm font-semibold">Cash Out</p>
+                                <p class="text-xs text-red-100">Remove money</p>
+                        </div>
+                            <i class="fas fa-chevron-right text-red-200 text-xs sm:text-sm flex-shrink-0 mt-1 sm:mt-0"></i>
+                </button>
+
+                        <!-- Safe Drop Button -->
+                        <button id="safe-drop-btn" class="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white rounded-xl sm:rounded-2xl p-3 sm:p-4 transition-all duration-200 transform hover:scale-105 hover:shadow-lg min-h-[70px] sm:min-h-[80px] flex flex-col sm:flex-row items-center justify-center sm:justify-between">
+                            <div class="text-center sm:text-left">
+                                <i class="fas fa-shield-alt text-lg sm:text-xl mb-1 sm:mb-2"></i>
+                                <p class="text-xs sm:text-sm font-semibold">Safe Drop</p>
+                                <p class="text-xs text-purple-100">Secure cash storage</p>
+                        </div>
+                            <i class="fas fa-chevron-right text-purple-200 text-xs sm:text-sm flex-shrink-0 mt-1 sm:mt-0"></i>
+                </button>
+
+                        <!-- End Shift Button -->
+                        <button id="end-shift-btn" class="bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white rounded-xl sm:rounded-2xl p-3 sm:p-4 transition-all duration-200 transform hover:scale-105 hover:shadow-lg min-h-[70px] sm:min-h-[80px] flex flex-col sm:flex-row items-center justify-center sm:justify-between">
+                            <div class="text-center sm:text-left">
+                                <i class="fas fa-stop-circle text-lg sm:text-xl mb-1 sm:mb-2"></i>
+                                <p class="text-xs sm:text-sm font-semibold">End Shift</p>
+                                <p class="text-xs text-gray-100">Close drawer</p>
+                    </div>
+                            <i class="fas fa-chevron-right text-gray-200 text-xs sm:text-sm flex-shrink-0 mt-1 sm:mt-0"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Transactions - Scrollable -->
+            <div class="bg-white/80 backdrop-blur-sm rounded-xl sm:rounded-2xl shadow-lg border border-white/20 overflow-hidden flex flex-col">
+                <div class="p-3 sm:p-4 md:p-5 lg:p-6 border-b border-gray-200/50 flex-shrink-0">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h2 class="text-base sm:text-lg md:text-xl font-semibold text-gray-800">Recent Transactions</h2>
+                            <p class="text-xs sm:text-sm text-gray-600 mt-1">Latest cash drawer activities</p>
+        </div>
+                        <button id="audit-logs-btn" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors">
+                            <i class="fas fa-history mr-1"></i>
+                            Audit Logs
+                        </button>
+                    </div>
+                </div>
+                <div class="p-3 sm:p-4 md:p-5 lg:p-6 flex-1 min-h-0">
+                    <div id="recent-transactions" class="space-y-2 sm:space-y-3 h-full max-h-[400px] sm:max-h-[450px] md:max-h-[500px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+                <!-- Transactions will be loaded dynamically -->
+                        <div class="text-center py-6 sm:py-8">
+                    <div class="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-blue-600 mx-auto"></div>
+                            <p class="text-gray-500 mt-2 text-xs sm:text-sm">Loading transactions...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modals -->
+<!-- Modern Starting Cash Modal -->
+<div id="starting-cash-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden flex items-center justify-center z-50 p-3 sm:p-4 md:p-6 overflow-y-auto">
+    <div class="bg-white rounded-xl sm:rounded-2xl shadow-2xl w-full max-w-md mx-auto">
+        <div class="p-4 sm:p-5 md:p-6">
+            <div class="flex items-center justify-between mb-4 sm:mb-6">
+            <h3 class="text-lg sm:text-xl font-semibold text-gray-800">Starting Cash Amount</h3>
+                <button onclick="hideModal('starting-cash-modal')" class="text-gray-400 hover:text-gray-600 transition-colors">
+                    <i class="fas fa-times text-lg sm:text-xl"></i>
+                </button>
+        </div>
+        <form id="starting-cash-form">
+                <div class="mb-4 sm:mb-6">
+                    <label class="block text-sm sm:text-base font-medium text-gray-700 mb-2">Opening Amount</label>
+                    <div class="relative">
+                        <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm sm:text-base">shs</span>
+                        <input type="number" id="starting-cash-input" step="0.01" min="0" class="w-full pl-10 pr-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm sm:text-base" placeholder="0.00" required>
+            </div>
+                </div>
+                <div class="flex flex-col sm:flex-row gap-2 sm:gap-3">
+                    <button type="button" onclick="hideModal('starting-cash-modal')" class="flex-1 px-4 py-2 sm:py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm sm:text-base font-medium">
+                        Cancel
+                    </button>
+                    <button type="submit" class="flex-1 px-4 py-2 sm:py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm sm:text-base font-medium">
+                        Open Drawer
+                    </button>
+            </div>
+        </form>
+        </div>
+    </div>
+</div>
+
+<!-- Cash In Modal -->
+<div id="cash-in-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden flex items-center justify-center z-50 p-3 sm:p-4 md:p-6 overflow-y-auto">
+    <div class="bg-white rounded-xl sm:rounded-2xl shadow-2xl w-full max-w-md mx-auto">
+        <div class="p-4 sm:p-5 md:p-6">
+            <div class="flex items-center justify-between mb-4 sm:mb-6">
+                <h3 class="text-lg sm:text-xl font-semibold text-gray-800">Add Cash In</h3>
+                <button onclick="hideModal('cash-in-modal')" class="text-gray-400 hover:text-gray-600 transition-colors">
+                    <i class="fas fa-times text-lg sm:text-xl"></i>
+                </button>
+            </div>
+            <form id="cash-in-form">
+                <div class="mb-4 sm:mb-6">
+                    <label class="block text-sm sm:text-base font-medium text-gray-700 mb-2">Amount</label>
+                    <div class="relative">
+                        <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm sm:text-base">shs</span>
+                        <input type="number" id="cash-in-amount" step="0.01" min="0" class="w-full pl-10 pr-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base" placeholder="0.00" required>
+                    </div>
+                </div>
+                <div class="mb-4 sm:mb-6">
+                    <label class="block text-sm sm:text-base font-medium text-gray-700 mb-2">Reason</label>
+                    <input type="text" id="cash-in-reason" list="cash-in-reason-list" class="w-full px-3 py-2 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base" placeholder="Enter reason for cash in" required>
+                    <datalist id="cash-in-reason-list"></datalist>
+                </div>
+                <div class="mb-4 sm:mb-6">
+                    <label class="block text-sm sm:text-base font-medium text-gray-700 mb-2">From Who</label>
+                    <input type="text" id="cash-in-from" list="cash-in-from-list" class="w-full px-3 py-2 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base" placeholder="Who is providing the cash" required>
+                    <datalist id="cash-in-from-list"></datalist>
+                </div>
+                <div class="flex flex-col sm:flex-row gap-2 sm:gap-3">
+                    <button type="button" onclick="hideModal('cash-in-modal')" class="flex-1 px-4 py-2 sm:py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm sm:text-base font-medium">
+                        Cancel
+                    </button>
+                    <button type="submit" class="flex-1 px-4 py-2 sm:py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm sm:text-base font-medium">
+                        Add Cash In
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Cash Out Modal -->
+<div id="cash-out-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden flex items-center justify-center z-50 p-3 sm:p-4 md:p-6 overflow-y-auto">
+    <div class="bg-white rounded-xl sm:rounded-2xl shadow-2xl w-full max-w-md mx-auto">
+        <div class="p-4 sm:p-5 md:p-6">
+            <div class="flex items-center justify-between mb-4 sm:mb-6">
+                <h3 class="text-lg sm:text-xl font-semibold text-gray-800">Add Cash Out</h3>
+                <button onclick="hideModal('cash-out-modal')" class="text-gray-400 hover:text-gray-600 transition-colors">
+                    <i class="fas fa-times text-lg sm:text-xl"></i>
+                </button>
+            </div>
+        <form id="cash-out-form">
+                <div class="mb-4 sm:mb-6">
+                    <label class="block text-sm sm:text-base font-medium text-gray-700 mb-2">Amount</label>
+                    <div class="relative">
+                        <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm sm:text-base">shs</span>
+                        <input type="number" id="cash-out-amount" step="0.01" min="0" class="w-full pl-10 pr-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm sm:text-base" placeholder="0.00" required>
+            </div>
+            </div>
+                <div class="mb-4 sm:mb-6">
+                    <label class="block text-sm sm:text-base font-medium text-gray-700 mb-2">Reason</label>
+                    <input type="text" id="cash-out-reason" list="cash-out-reason-list" class="w-full px-3 py-2 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm sm:text-base" placeholder="Enter reason for cash out" required>
+                    <datalist id="cash-out-reason-list"></datalist>
+                </div>
+                <div class="mb-4 sm:mb-6">
+                    <label class="block text-sm sm:text-base font-medium text-gray-700 mb-2">Requires Approval</label>
+                    <select id="cash-out-approval" class="w-full px-3 py-2 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm sm:text-base">
+                    <option value="no">No</option>
+                    <option value="yes">Yes</option>
+                </select>
+            </div>
+                <div class="flex flex-col sm:flex-row gap-2 sm:gap-3">
+                    <button type="button" onclick="hideModal('cash-out-modal')" class="flex-1 px-4 py-2 sm:py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm sm:text-base font-medium">
+                        Cancel
+                    </button>
+                    <button type="submit" class="flex-1 px-4 py-2 sm:py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm sm:text-base font-medium">
+                        Add Cash Out
+                    </button>
+            </div>
+        </form>
+        </div>
+    </div>
+</div>
+
+<!-- Safe Drop Modal -->
+<div id="safe-drop-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden flex items-center justify-center z-50 p-3 sm:p-4 md:p-6 overflow-y-auto">
+    <div class="bg-white rounded-xl sm:rounded-2xl shadow-2xl w-full max-w-md mx-auto">
+        <div class="p-4 sm:p-5 md:p-6">
+            <div class="flex items-center justify-between mb-4 sm:mb-6">
+                <h3 class="text-lg sm:text-xl font-semibold text-gray-800">Safe Drop</h3>
+                <button onclick="hideModal('safe-drop-modal')" class="text-gray-400 hover:text-gray-600 transition-colors">
+                    <i class="fas fa-times text-lg sm:text-xl"></i>
+                </button>
+            </div>
+        <form id="safe-drop-form">
+                <div class="mb-4 sm:mb-6">
+                    <label class="block text-sm sm:text-base font-medium text-gray-700 mb-2">Amount</label>
+                    <div class="relative">
+                        <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm sm:text-base">shs</span>
+                        <input type="number" id="safe-drop-amount" step="0.01" min="0" class="w-full pl-10 pr-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm sm:text-base" placeholder="0.00" required>
+            </div>
+            </div>
+                <div class="mb-4 sm:mb-6">
+                    <label class="block text-sm sm:text-base font-medium text-gray-700 mb-2">Location</label>
+                    <input type="text" id="safe-drop-location" list="safe-drop-location-list" class="w-full px-3 py-2 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm sm:text-base" placeholder="Where is the cash being dropped" required>
+                    <datalist id="safe-drop-location-list"></datalist>
+            </div>
+                <div class="mb-4 sm:mb-6">
+                    <label class="block text-sm sm:text-base font-medium text-gray-700 mb-2">Received By</label>
+                    <input type="text" id="safe-drop-received" list="safe-drop-received-list" class="w-full px-3 py-2 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm sm:text-base" placeholder="Who received the cash" required>
+                    <datalist id="safe-drop-received-list"></datalist>
+                </div>
+                <div class="flex flex-col sm:flex-row gap-2 sm:gap-3">
+                    <button type="button" onclick="hideModal('safe-drop-modal')" class="flex-1 px-4 py-2 sm:py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm sm:text-base font-medium">
+                        Cancel
+                    </button>
+                    <button type="submit" class="flex-1 px-4 py-2 sm:py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm sm:text-base font-medium">
+                        Record Safe Drop
+                    </button>
+            </div>
+        </form>
+        </div>
+    </div>
+</div>
+
+
+
+<!-- End Shift Modal -->
+<div id="end-shift-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden flex items-center justify-center z-50 p-3 sm:p-4 md:p-6 overflow-y-auto">
+    <div class="bg-white rounded-xl sm:rounded-2xl shadow-2xl w-full max-w-md mx-auto">
+        <div class="p-4 sm:p-5 md:p-6">
+            <div class="flex items-center justify-between mb-4 sm:mb-6">
+                <h3 class="text-lg sm:text-xl font-semibold text-gray-800">End Shift</h3>
+                <button onclick="hideModal('end-shift-modal')" class="text-gray-400 hover:text-gray-600 transition-colors">
+                    <i class="fas fa-times text-lg sm:text-xl"></i>
+                </button>
+            </div>
+        <form id="end-shift-form">
+                <div class="mb-4 sm:mb-6">
+                    <label class="block text-sm sm:text-base font-medium text-gray-700 mb-2">Final Cash Count</label>
+                    <div class="relative">
+                        <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm sm:text-base">shs</span>
+                        <input type="number" id="end-shift-amount" step="0.01" min="0" class="w-full pl-10 pr-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent text-sm sm:text-base" placeholder="0.00" required>
+            </div>
+                </div>
+                <div class="flex flex-col sm:flex-row gap-2 sm:gap-3">
+                    <button type="button" onclick="hideModal('end-shift-modal')" class="flex-1 px-4 py-2 sm:py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm sm:text-base font-medium">
+                        Cancel
+                    </button>
+                    <button type="submit" class="flex-1 px-4 py-2 sm:py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors text-sm sm:text-base font-medium">
+                        End Shift
+                    </button>
+            </div>
+        </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Transaction Modal -->
+<div id="edit-transaction-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden flex items-center justify-center z-50 p-3 sm:p-4 md:p-6 overflow-y-auto">
+    <div class="bg-white rounded-xl sm:rounded-2xl shadow-2xl w-full max-w-md mx-auto">
+        <div class="p-4 sm:p-5 md:p-6">
+            <div class="flex items-center justify-between mb-4 sm:mb-6">
+                <h3 class="text-lg sm:text-xl font-semibold text-gray-800">Edit Transaction</h3>
+                <button onclick="hideModal('edit-transaction-modal')" class="text-gray-400 hover:text-gray-600 transition-colors">
+                    <i class="fas fa-times text-lg sm:text-xl"></i>
+                </button>
+            </div>
+            <form id="edit-transaction-form">
+                <input type="hidden" id="edit-transaction-id">
+                <div class="mb-4 sm:mb-6">
+                    <label class="block text-sm sm:text-base font-medium text-gray-700 mb-2">Amount</label>
+                    <div class="relative">
+                        <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm sm:text-base">shs</span>
+                        <input type="number" id="edit-transaction-amount" step="0.01" min="0" class="w-full pl-10 pr-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base" placeholder="0.00" required>
+            </div>
+            </div>
+                <div class="mb-4 sm:mb-6">
+                    <label class="block text-sm sm:text-base font-medium text-gray-700 mb-2">Description</label>
+                    <input type="text" id="edit-transaction-description" list="edit-description-list" class="w-full px-3 py-2 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base" placeholder="Enter description" required>
+                    <datalist id="edit-description-list"></datalist>
+                </div>
+                <div class="flex flex-col sm:flex-row gap-2 sm:gap-3">
+                    <button type="button" onclick="hideModal('edit-transaction-modal')" class="flex-1 px-4 py-2 sm:py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm sm:text-base font-medium">
+                        Cancel
+                    </button>
+                    <button type="submit" class="flex-1 px-4 py-2 sm:py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm sm:text-base font-medium">
+                        Update Transaction
+                    </button>
+            </div>
+        </form>
+        </div>
+    </div>
+</div>
+
+<!-- Audit Logs Modal -->
+<div id="audit-logs-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden flex items-center justify-center z-50 p-3 sm:p-4 md:p-6 overflow-y-auto">
+    <div class="bg-white rounded-xl sm:rounded-2xl shadow-2xl w-full max-w-4xl mx-auto">
+        <div class="p-4 sm:p-5 md:p-6">
+            <div class="flex items-center justify-between mb-4 sm:mb-6">
+                <h3 class="text-lg sm:text-xl font-semibold text-gray-800">Audit Logs</h3>
+                <button onclick="hideModal('audit-logs-modal')" class="text-gray-400 hover:text-gray-600 transition-colors">
+                    <i class="fas fa-times text-lg sm:text-xl"></i>
+                </button>
+            </div>
+            <div class="max-h-[500px] overflow-y-auto">
+                <div id="audit-logs-content" class="space-y-3">
+                    <!-- Audit logs will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Message Container -->
+<div id="message-container" class="fixed top-4 right-4 z-50 space-y-2"></div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    // Global variables
+    let currentTransactionId = null;
+    let selectedDate = new Date().toISOString().split('T')[0]; // Today's date in YYYY-MM-DD format
+    let hasActiveSession = false;
+    let currentSession = null;
+    let userChangedDate = false;
+
+    // Update current time
+    function updateCurrentTime() {
+        const now = new Date();
+        const timeString = now.toLocaleTimeString('en-US', { 
+            hour: '2-digit', 
+            minute: '2-digit',
+            hour12: true 
+        });
+        document.getElementById('current-time').textContent = timeString;
+    }
+
+    // Update time every second
+    setInterval(updateCurrentTime, 1000);
+    updateCurrentTime();
+
+    // Modal functions
+    function showModal(modalId) {
+        document.getElementById(modalId).classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function hideModal(modalId) {
+        document.getElementById(modalId).classList.add('hidden');
+        document.body.style.overflow = 'auto';
+    }
+
+    // Message functions
+    function showMessage(message, type = 'info') {
+        const messageContainer = document.getElementById('message-container');
+        const messageDiv = document.createElement('div');
+        
+        const bgColor = type === 'success' ? 'bg-green-500' : 
+                       type === 'error' ? 'bg-red-500' : 
+                       type === 'warning' ? 'bg-yellow-500' : 'bg-blue-500';
+        
+        messageDiv.className = `${bgColor} text-white p-3 sm:p-4 rounded-lg shadow-lg max-w-sm transform transition-all duration-300 translate-x-full`;
+        messageDiv.innerHTML = `
+            <div class="flex items-center justify-between">
+                <span class="text-sm sm:text-base">${message}</span>
+                <button onclick="this.parentElement.parentElement.remove()" class="ml-2 text-white hover:text-gray-200">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        `;
+        
+        messageContainer.appendChild(messageDiv);
+        
+        // Animate in
+        setTimeout(() => {
+            messageDiv.classList.remove('translate-x-full');
+        }, 100);
+        
+        // Auto remove after 5 seconds
+        setTimeout(() => {
+            messageDiv.classList.add('translate-x-full');
+            setTimeout(() => {
+                if (messageDiv.parentElement) {
+                    messageDiv.remove();
+                }
+            }, 300);
+        }, 5000);
+    }
+
+    // Load session status
+    function loadSessionStatus() {
+        fetch('/api/cash-drawer/session-status')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    hasActiveSession = data.has_active_session;
+                    currentSession = data.session;
+                    
+                    const statusIndicator = document.getElementById('session-indicator');
+                    const statusText = document.getElementById('session-status-text');
+                    const statusDetails = document.getElementById('session-details');
+                    const noSessionCallout = document.getElementById('no-session-callout');
+                    const mainContent = document.getElementById('main-session-content');
+                    
+                    if (hasActiveSession) {
+                        statusIndicator.className = 'fas fa-circle text-green-500 text-sm';
+                        statusText.textContent = 'Active Session';
+                        statusDetails.textContent = `Started at ${currentSession.start_time} with shs ${currentSession.starting_amount.toFixed(2)}`;
+                        if (noSessionCallout) noSessionCallout.classList.add('hidden');
+                        if (mainContent) {
+                            mainContent.style.opacity = '1';
+                            mainContent.style.pointerEvents = 'auto';
+                        }
+                        // Keep today as default date filter - don't override with session date
+                    } else {
+                        statusIndicator.className = 'fas fa-circle text-red-500 text-sm';
+                        statusText.textContent = 'No Active Session';
+                        statusDetails.textContent = 'Click "Start Cash" to begin a new session';
+                        if (noSessionCallout) noSessionCallout.classList.remove('hidden');
+                        if (mainContent) {
+                            mainContent.style.opacity = '0.5';
+                            mainContent.style.pointerEvents = 'none';
+                        }
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error loading session status:', error);
+            });
+    }
+
+    // Load cash drawer status
+    function loadCashDrawerStatus() {
+        console.log('Loading cash drawer status for date:', selectedDate);
+        fetch(`/api/cash-drawer/status?date=${selectedDate}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('current-balance').textContent = `shs ${data.data.current_balance.toFixed(2)}`;
+                    document.getElementById('today-sales').textContent = `shs ${data.data.today_sales.toFixed(2)}`;
+                    document.getElementById('transaction-count').textContent = data.data.today_transactions;
+                    document.getElementById('pending-count').textContent = data.data.pending_count;
+                    
+                    // Show variance alert if there's a significant variance
+                    if (Math.abs(data.data.current_balance - data.data.today_sales) > 10) {
+                        const varianceAlert = document.getElementById('variance-alert');
+                        const varianceMessage = document.getElementById('variance-message');
+                        varianceMessage.textContent = `Current balance: shs ${data.data.current_balance.toFixed(2)}, Expected: shs ${data.data.today_sales.toFixed(2)}`;
+                        varianceAlert.classList.remove('hidden');
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error loading cash drawer status:', error);
+            });
+    }
+
+    // Load recent transactions
+    function loadRecentTransactions() {
+        console.log('Loading transactions for date:', selectedDate);
+        fetch(`/api/cash-drawer/transactions?date=${selectedDate}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const transactionsContainer = document.getElementById('recent-transactions');
+                    transactionsContainer.innerHTML = '';
+                    
+                    if (data.transactions.length === 0) {
+                        transactionsContainer.innerHTML = `
+                            <div class="text-center py-6 sm:py-8">
+                                <i class="fas fa-receipt text-gray-400 text-3xl sm:text-4xl mb-3"></i>
+                                <p class="text-gray-500 text-sm sm:text-base">No transactions yet</p>
+                            </div>
+                        `;
+                        return;
+                    }
+                    
+                    const canModify = hasActiveSession && currentSession && currentSession.date === selectedDate;
+                    data.transactions.forEach(transaction => {
+                        const transactionDiv = document.createElement('div');
+                        transactionDiv.className = 'bg-gray-50 rounded-lg p-2 sm:p-3 border border-gray-200 hover:bg-gray-100 transition-colors';
+                        
+                        const typeColor = transaction.type === 'cash_in' ? 'text-green-600' : 'text-red-600';
+                        const typeIcon = transaction.type === 'cash_in' ? 'fa-plus-circle' : 'fa-minus-circle';
+                        const typeText = transaction.type === 'cash_in' ? 'Cash In' : 'Cash Out';
+                        
+                        const actionsHtml = canModify ? `
+                                <div class=\"ml-2 flex gap-1\">\n                                    <button onclick=\"editTransaction(${transaction.id}, ${transaction.amount}, '${transaction.description.replace(/'/g, "\\'" )}')\" class=\"text-blue-600 hover:text-blue-800 text-xs\">\n                                        <i class=\"fas fa-edit\"></i>\n                                    </button>\n                                    <button onclick=\"deleteTransaction(${transaction.id})\" class=\"text-red-600 hover:text-red-800 text-xs\">\n                                        <i class=\"fas fa-trash\"></i>\n                                    </button>\n                                </div>
+                            ` : '';
+
+                        transactionDiv.innerHTML = `
+                            <div class=\"flex items-center justify-between\">\n                                <div class=\"flex items-center gap-2 sm:gap-3 flex-1 min-w-0\">\n                                    <i class=\"fas ${typeIcon} ${typeColor} text-sm sm:text-base\"></i>\n                                    <div class=\"flex-1 min-w-0\">\n                                        <p class=\"text-xs sm:text-sm font-medium text-gray-800 truncate\">${typeText}</p>\n                                        <p class=\"text-xs sm:text-sm text-gray-600 truncate\">${transaction.description}</p>\n                                    </div>\n                                </div>\n                                <div class=\"text-right flex-shrink-0\">\n                                    <p class=\"text-xs sm:text-sm font-semibold ${typeColor}\">shs ${transaction.amount.toFixed(2)}</p>\n                                    <p class=\"text-xs text-gray-500\">${transaction.created_at}</p>\n                                </div>\n                                ${actionsHtml}\n                            </div>
+                        `;
+                        
+                        transactionsContainer.appendChild(transactionDiv);
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error loading transactions:', error);
+            });
+    }
+
+    // Load audit logs
+    function loadAuditLogs() {
+        fetch('/api/cash-drawer/audit-logs')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const logsContainer = document.getElementById('audit-logs-content');
+                    logsContainer.innerHTML = '';
+                    
+                    if (data.logs.length === 0) {
+                        logsContainer.innerHTML = `
+                            <div class="text-center py-6 sm:py-8">
+                                <i class="fas fa-history text-gray-400 text-3xl sm:text-4xl mb-3"></i>
+                                <p class="text-gray-500 text-sm sm:text-base">No audit logs found</p>
+                            </div>
+                        `;
+                        return;
+                    }
+                    
+                    data.logs.forEach(log => {
+                        const logDiv = document.createElement('div');
+                        logDiv.className = 'bg-gray-50 rounded-lg p-3 sm:p-4 border border-gray-200';
+                        
+                        const actionColor = {
+                            'create': 'text-green-600',
+                            'edit': 'text-blue-600',
+                            'delete': 'text-red-600',
+                            'open_drawer': 'text-purple-600',
+                            'close_drawer': 'text-gray-600',
+                            'count_cash': 'text-yellow-600',
+                            'safe_drop': 'text-indigo-600'
+                        }[log.action_type] || 'text-gray-600';
+                        
+                        logDiv.innerHTML = `
+                            <div class="flex items-start justify-between">
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex items-center gap-2 mb-1">
+                                        <span class="px-2 py-1 bg-gray-200 text-gray-700 rounded text-xs font-medium">${log.action_type.toUpperCase()}</span>
+                                        <span class="text-xs text-gray-500">${log.created_at}</span>
+                                    </div>
+                                    <p class="text-sm text-gray-800 mb-1">${log.description}</p>
+                                    <p class="text-xs text-gray-600">IP: ${log.ip_address || 'N/A'}</p>
+                                </div>
+                            </div>
+                        `;
+                        
+                        logsContainer.appendChild(logDiv);
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error loading audit logs:', error);
+                showMessage('Error loading audit logs', 'error');
+            });
+    }
+
+    // Edit transaction
+    function editTransaction(transactionId, amount, description) {
+        currentTransactionId = transactionId;
+        document.getElementById('edit-transaction-id').value = transactionId;
+        document.getElementById('edit-transaction-amount').value = amount;
+        document.getElementById('edit-transaction-description').value = description;
+        showModal('edit-transaction-modal');
+    }
+
+    // Delete transaction
+    function deleteTransaction(transactionId) {
+        if (confirm('Are you sure you want to delete this transaction? This action cannot be undone.')) {
+            fetch(`/api/cash-drawer/transactions/${transactionId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showMessage(data.message, 'success');
+                    loadCashDrawerStatus();
+                    loadRecentTransactions();
+                } else {
+                    showMessage(data.message, 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showMessage('Error deleting transaction', 'error');
+            });
+        }
+    }
+
+    // Date filter functions
+    function updateDateFilter(date) {
+        selectedDate = date;
+        document.getElementById('date-filter').value = date;
+        userChangedDate = true;
+        console.log('Date filter updated to:', selectedDate);
+        loadCashDrawerStatus();
+        loadRecentTransactions();
+    }
+
+    function setToday() {
+        const today = new Date().toISOString().split('T')[0];
+        updateDateFilter(today);
+    }
+
+    function setYesterday() {
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        updateDateFilter(yesterday.toISOString().split('T')[0]);
+    }
+
+    // Event listeners
+    document.addEventListener('DOMContentLoaded', function() {
+        // Set default date to today
+        const today = new Date().toISOString().split('T')[0];
+        selectedDate = today;
+        document.getElementById('date-filter').value = today;
+        
+        // Load initial data
+        loadSessionStatus();
+        loadCashDrawerStatus();
+        loadRecentTransactions();
+
+        // Starting Cash Button
+        document.getElementById('starting-cash-btn').addEventListener('click', function() {
+            if (hasActiveSession) {
+                showMessage('You already have an active session. Please end your current session first.', 'warning');
+                return;
+            }
+            showModal('starting-cash-modal');
+        });
+
+        // Callout Start Session (keeps UX aligned with base layout)
+        const calloutStart = document.getElementById('callout-start-session');
+        if (calloutStart) {
+            calloutStart.addEventListener('click', function() {
+                document.getElementById('starting-cash-btn').click();
+            });
+        }
+
+        // Cash In Button
+        document.getElementById('cash-in-btn').addEventListener('click', function() {
+            if (!hasActiveSession) {
+                showMessage('Please start a cash drawer session first.', 'warning');
+                return;
+            }
+            showModal('cash-in-modal');
+        });
+
+        // Cash Out Button
+        document.getElementById('cash-out-btn').addEventListener('click', function() {
+            if (!hasActiveSession) {
+                showMessage('Please start a cash drawer session first.', 'warning');
+                return;
+            }
+            showModal('cash-out-modal');
+        });
+
+        // Safe Drop Button
+        document.getElementById('safe-drop-btn').addEventListener('click', function() {
+            if (!hasActiveSession) {
+                showMessage('Please start a cash drawer session first.', 'warning');
+                return;
+            }
+            showModal('safe-drop-modal');
+        });
+
+        // Count Cash feature removed
+
+        // End Shift Button
+        document.getElementById('end-shift-btn').addEventListener('click', function() {
+            if (!hasActiveSession) {
+                showMessage('No active session to end.', 'warning');
+                return;
+            }
+            showModal('end-shift-modal');
+        });
+
+        // Audit Logs Button
+        document.getElementById('audit-logs-btn').addEventListener('click', function() {
+            loadAuditLogs();
+            showModal('audit-logs-modal');
+        });
+
+        // Date Filter Controls
+        document.getElementById('date-filter').addEventListener('change', function() {
+            updateDateFilter(this.value);
+        });
+
+        document.getElementById('today-btn').addEventListener('click', function() {
+            setToday();
+        });
+
+        document.getElementById('yesterday-btn').addEventListener('click', function() {
+            setYesterday();
+        });
+
+        // Starting Cash Form
+        document.getElementById('starting-cash-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const amount = document.getElementById('starting-cash-input').value;
+            
+            fetch('/api/cash-drawer/open', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ amount: parseFloat(amount) })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    hideModal('starting-cash-modal');
+                    showMessage(data.message, 'success');
+                    loadSessionStatus();
+                    loadCashDrawerStatus();
+                    loadRecentTransactions();
+                } else {
+                    showMessage(data.message, 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showMessage('Error opening cash drawer', 'error');
+            });
+        });
+
+        // Cash In Form
+        document.getElementById('cash-in-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const amount = document.getElementById('cash-in-amount').value;
+            const reason = normalizeText(document.getElementById('cash-in-reason').value);
+            const fromWho = normalizeText(document.getElementById('cash-in-from').value);
+            
+            fetch('/api/cash-drawer/cash-in', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ 
+                    amount: parseFloat(amount), 
+                    reason: reason, 
+                    from_who: fromWho 
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    hideModal('cash-in-modal');
+                    showMessage(data.message, 'success');
+                    loadCashDrawerStatus();
+                    loadRecentTransactions();
+                } else {
+                    showMessage(data.message, 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showMessage('Error adding cash in', 'error');
+            });
+        });
+
+        // Cash Out Form
+        document.getElementById('cash-out-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const amount = document.getElementById('cash-out-amount').value;
+            const reason = normalizeText(document.getElementById('cash-out-reason').value);
+            const requiresApproval = document.getElementById('cash-out-approval').value;
+            
+            fetch('/api/cash-drawer/cash-out', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ 
+                    amount: parseFloat(amount), 
+                    reason: reason,
+                    requires_approval: requiresApproval
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    hideModal('cash-out-modal');
+                    showMessage(data.message, 'success');
+                    loadCashDrawerStatus();
+                    loadRecentTransactions();
+                } else {
+                    showMessage(data.message, 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showMessage('Error adding cash out', 'error');
+            });
+        });
+
+        // Safe Drop Form
+        document.getElementById('safe-drop-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const amount = document.getElementById('safe-drop-amount').value;
+            const location = normalizeText(document.getElementById('safe-drop-location').value);
+            const receivedBy = normalizeText(document.getElementById('safe-drop-received').value);
+            
+            fetch('/api/cash-drawer/safe-drop', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ 
+                    amount: parseFloat(amount), 
+                    location: location,
+                    received_by: receivedBy
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    hideModal('safe-drop-modal');
+                    showMessage(data.message, 'success');
+                    loadCashDrawerStatus();
+                    loadRecentTransactions();
+                } else {
+                    showMessage(data.message, 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showMessage('Error recording safe drop', 'error');
+            });
+        });
+
+        // Count Cash form removed
+
+        // End Shift Form
+        document.getElementById('end-shift-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const amount = document.getElementById('end-shift-amount').value;
+            
+            fetch('/api/cash-drawer/end-shift', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ counted_amount: parseFloat(amount) })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    hideModal('end-shift-modal');
+                    showMessage(data.message, 'success');
+                    loadSessionStatus();
+                    loadCashDrawerStatus();
+                    loadRecentTransactions();
+                } else {
+                    showMessage(data.message, 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showMessage('Error ending shift', 'error');
+            });
+        });
+
+        // Edit Transaction Form
+        document.getElementById('edit-transaction-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const transactionId = document.getElementById('edit-transaction-id').value;
+            const amount = document.getElementById('edit-transaction-amount').value;
+            const description = normalizeText(document.getElementById('edit-transaction-description').value);
+            
+            fetch(`/api/cash-drawer/transactions/${transactionId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ 
+                    amount: parseFloat(amount), 
+                    description: description 
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    hideModal('edit-transaction-modal');
+                    showMessage(data.message, 'success');
+                    loadCashDrawerStatus();
+                    loadRecentTransactions();
+                } else {
+                    showMessage(data.message, 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showMessage('Error updating transaction', 'error');
+            });
+        });
+        // --- Input Normalization and Live Suggestions ---
+        function normalizeText(value) {
+            if (!value) return '';
+            return value.toString().replace(/\s+/g, ' ').trim().toUpperCase();
+        }
+
+        function attachNormalizationAndSuggest(inputId, datalistId, field, type) {
+            const inputEl = document.getElementById(inputId);
+            const listEl = document.getElementById(datalistId);
+            if (!inputEl || !listEl) return;
+
+            let lastQuery = '';
+            let debounceTimer = null;
+
+            inputEl.addEventListener('input', function() {
+                // Normalize progressively
+                const caretEnd = this.selectionEnd;
+                const normalized = normalizeText(this.value);
+                this.value = normalized;
+                try { this.setSelectionRange(caretEnd, caretEnd); } catch(e) {}
+
+                const q = normalized;
+                if (q === lastQuery) return;
+                lastQuery = q;
+
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(() => {
+                    if (!q) { listEl.innerHTML = ''; return; }
+                    fetch(`/api/cash-drawer/suggestions?field=${encodeURIComponent(field)}&type=${encodeURIComponent(type)}&query=${encodeURIComponent(q)}`)
+                        .then(r => r.json())
+                        .then(d => {
+                            if (!d.success) return;
+                            listEl.innerHTML = '';
+                            (d.suggestions || []).forEach(s => {
+                                const opt = document.createElement('option');
+                                opt.value = s;
+                                listEl.appendChild(opt);
+                            });
+                        })
+                        .catch(() => {});
+                }, 150);
+            });
+
+            inputEl.addEventListener('blur', function() {
+                this.value = normalizeText(this.value);
+            });
+        }
+
+        // Hook up fields
+        attachNormalizationAndSuggest('cash-in-reason', 'cash-in-reason-list', 'reason', 'cash_in');
+        attachNormalizationAndSuggest('cash-in-from', 'cash-in-from-list', 'from_who', 'cash_in');
+        attachNormalizationAndSuggest('cash-out-reason', 'cash-out-reason-list', 'reason', 'cash_out');
+        attachNormalizationAndSuggest('safe-drop-location', 'safe-drop-location-list', 'location', 'cash_out');
+        attachNormalizationAndSuggest('safe-drop-received', 'safe-drop-received-list', 'received_by', 'cash_out');
+        attachNormalizationAndSuggest('edit-transaction-description', 'edit-description-list', 'description', 'any');
+
+    });
+</script>
+{% endblock %}

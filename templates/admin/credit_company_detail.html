@@ -1,0 +1,777 @@
+{% extends "role_base.html" %}
+
+{% block title %}Credit Company Details - Admin Panel{% endblock %}
+
+{% block sidebar_icon %}crown{% endblock %}
+{% block sidebar_title %}Admin Panel{% endblock %}
+
+{% block sidebar_nav %}
+<!-- Credit Sales -->
+<a href="/admin/credit-sales" class="nav-item flex items-center px-4 py-4 text-white rounded-2xl bg-white/20 transition-all duration-200 group">
+    <div class="w-10 h-10 bg-white/30 rounded-xl flex items-center justify-center mr-4">
+        <i class="fas fa-credit-card text-white text-lg"></i>
+    </div>
+    <div>
+        <p class="font-semibold">Credit Sales</p>
+        <p class="text-xs text-white/70">Manage credit sales</p>
+    </div>
+</a>
+
+<!-- Credit Analytics -->
+<a href="/admin/credit-analytics" class="nav-item flex items-center px-4 py-4 text-white rounded-2xl hover:bg-white/20 transition-all duration-200 group">
+    <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center mr-4 group-hover:bg-white/30 transition-colors duration-200">
+        <i class="fas fa-chart-bar text-white text-lg"></i>
+    </div>
+    <div>
+        <p class="font-semibold">Credit Analytics</p>
+        <p class="text-xs text-white/70">Reports & insights</p>
+    </div>
+</a>
+
+<!-- Credit Audits -->
+<a href="/admin/credit-audits" class="nav-item flex items-center px-4 py-4 text-white rounded-2xl hover:bg-white/20 transition-all duration-200 group">
+    <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center mr-4 group-hover:bg-white/30 transition-colors duration-200">
+        <i class="fas fa-clipboard-list text-white text-lg"></i>
+    </div>
+    <div>
+        <p class="font-semibold">Credit Audits</p>
+        <p class="text-xs text-white/70">Transaction history</p>
+    </div>
+</a>
+
+<!-- Credit Settings -->
+<a href="/admin/credit-settings" class="nav-item flex items-center px-4 py-4 text-white rounded-2xl hover:bg-white/20 transition-all duration-200 group">
+    <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center mr-4 group-hover:bg-white/30 transition-colors duration-200">
+        <i class="fas fa-cog text-white text-lg"></i>
+    </div>
+    <div>
+        <p class="font-semibold">Credit Settings</p>
+        <p class="text-xs text-white/70">Configuration</p>
+    </div>
+</a>
+{% endblock %}
+
+{% block content %}
+<!-- Company Detail Header -->
+<div class="mb-4 sm:mb-8">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div class="flex items-center space-x-2 sm:space-x-4">
+            <a href="/admin/credit-sales" class="text-blue-600 hover:text-blue-800 transition-colors">
+                <i class="fas fa-arrow-left text-lg sm:text-xl"></i>
+            </a>
+            <div>
+                <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-800 mb-2">Credit Company Details</h1>
+                <p class="text-gray-600 text-sm sm:text-base lg:text-lg">View all credit transactions for this company</p>
+            </div>
+        </div>
+        <div class="flex items-center space-x-3 role-badge text-white px-4 sm:px-6 py-2 sm:py-3 rounded-2xl">
+            <i class="fas fa-crown text-lg sm:text-xl"></i>
+            <span class="font-bold text-base sm:text-lg">Admin</span>
+        </div>
+    </div>
+</div>
+
+<!-- Company Information Card -->
+<div id="companyInfoCard" class="bg-white rounded-2xl sm:rounded-3xl shadow-2xl border border-gray-100 mb-4 sm:mb-8 p-4 sm:p-6 lg:p-8 hidden">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+        <div>
+            <p class="text-xs sm:text-sm text-gray-500 mb-1">Company Name</p>
+            <p id="companyName" class="text-base sm:text-lg font-bold text-gray-900"></p>
+        </div>
+        <div>
+            <p class="text-xs sm:text-sm text-gray-500 mb-1">Phone Number</p>
+            <p id="companyPhone" class="text-base sm:text-lg font-semibold text-gray-900"></p>
+        </div>
+        <div>
+            <p class="text-xs sm:text-sm text-gray-500 mb-1">Company ID</p>
+            <p id="companyId" class="text-base sm:text-lg font-semibold text-gray-900"></p>
+        </div>
+        <div>
+            <p class="text-xs sm:text-sm text-gray-500 mb-1">Total Credit Amount</p>
+            <p id="totalCreditAmount" class="text-base sm:text-lg font-bold text-blue-600"></p>
+        </div>
+    </div>
+    <div class="mt-4 sm:mt-6 pt-4 sm:pt-6 border-t border-gray-200">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+                <p class="text-xs sm:text-sm text-gray-500 mb-1">Total Transactions</p>
+                <p id="transactionCount" class="text-xl sm:text-2xl font-bold text-gray-900"></p>
+            </div>
+            <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:space-x-3">
+                <button onclick="exportToWhatsApp()" class="px-3 sm:px-4 lg:px-6 py-2 sm:py-3 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-colors duration-200 font-semibold text-sm sm:text-base">
+                    <i class="fab fa-whatsapp mr-2"></i><span class="hidden sm:inline">Export & Send via WhatsApp</span><span class="sm:hidden">WhatsApp</span>
+                </button>
+                <button onclick="downloadPDF()" class="px-3 sm:px-4 lg:px-6 py-2 sm:py-3 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-colors duration-200 font-semibold text-sm sm:text-base">
+                    <i class="fas fa-file-pdf mr-2"></i><span class="hidden sm:inline">Download PDF</span><span class="sm:hidden">PDF</span>
+                </button>
+                <button onclick="openPaymentModal()" class="px-3 sm:px-4 lg:px-6 py-2 sm:py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors duration-200 font-semibold text-sm sm:text-base">
+                    <i class="fas fa-money-bill-wave mr-2"></i><span class="hidden sm:inline">Record Payment</span><span class="sm:hidden">Payment</span>
+                </button>
+                <button onclick="refreshTransactions()" class="px-3 sm:px-4 py-2 bg-gray-600 text-white rounded-xl hover:bg-gray-700 transition-colors duration-200 font-semibold text-sm sm:text-base">
+                    <i class="fas fa-sync-alt mr-2"></i>Refresh
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Payment Modal -->
+<div id="paymentModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-2 sm:p-4">
+    <div class="bg-white rounded-2xl sm:rounded-3xl shadow-2xl max-w-md w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto">
+        <div class="p-4 sm:p-6 border-b border-gray-200">
+            <div class="flex items-center justify-between">
+                <h3 class="text-xl sm:text-2xl font-bold text-gray-800">Record Payment</h3>
+                <button onclick="closePaymentModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
+                    <i class="fas fa-times text-lg sm:text-xl"></i>
+                </button>
+            </div>
+        </div>
+        <div class="p-4 sm:p-6">
+            <form id="paymentForm" onsubmit="processPayment(event)">
+                <!-- Payment Method Selection -->
+                <div class="mb-4 sm:mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Payment Method</label>
+                    <div class="grid grid-cols-3 gap-2 sm:gap-3">
+                        <button type="button" onclick="selectPaymentMethod('cash')" id="cashBtn" class="payment-method-btn p-3 sm:p-4 border-2 border-gray-300 rounded-xl hover:border-blue-500 hover:bg-blue-50 transition-all duration-200">
+                            <i class="fas fa-money-bill-wave text-xl sm:text-2xl mb-1 sm:mb-2 text-gray-600"></i>
+                            <p class="font-semibold text-gray-700 text-xs sm:text-sm">Cash</p>
+                        </button>
+                        <button type="button" onclick="selectPaymentMethod('mpesa')" id="mpesaBtn" class="payment-method-btn p-3 sm:p-4 border-2 border-gray-300 rounded-xl hover:border-green-500 hover:bg-green-50 transition-all duration-200">
+                            <i class="fas fa-mobile-alt text-xl sm:text-2xl mb-1 sm:mb-2 text-gray-600"></i>
+                            <p class="font-semibold text-gray-700 text-xs sm:text-sm">M-Pesa</p>
+                        </button>
+                        <button type="button" onclick="selectPaymentMethod('card')" id="cardBtn" class="payment-method-btn p-3 sm:p-4 border-2 border-gray-300 rounded-xl hover:border-purple-500 hover:bg-purple-50 transition-all duration-200">
+                            <i class="fas fa-credit-card text-xl sm:text-2xl mb-1 sm:mb-2 text-gray-600"></i>
+                            <p class="font-semibold text-gray-700 text-xs sm:text-sm">Card</p>
+                        </button>
+                    </div>
+                    <input type="hidden" id="paymentMethod" name="payment_method" required>
+                </div>
+
+                <!-- Amount Paid -->
+                <div class="mb-4">
+                    <label for="amountPaid" class="block text-sm font-medium text-gray-700 mb-2">Amount Paid (KES)</label>
+                    <input type="number" id="amountPaid" name="amount_paid" step="0.01" min="0.01" required
+                        class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200">
+                </div>
+
+                <!-- Payer Name -->
+                <div class="mb-4">
+                    <label for="payerName" class="block text-sm font-medium text-gray-700 mb-2">Payer Name</label>
+                    <input type="text" id="payerName" name="payer_name" required
+                        class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200">
+                </div>
+
+                <!-- Phone Number (for M-Pesa) -->
+                <div id="phoneNumberField" class="mb-4 hidden">
+                    <label for="phoneNumber" class="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
+                    <input type="text" id="phoneNumber" name="phone_number"
+                        class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors duration-200"
+                        placeholder="e.g., 254712345678">
+                </div>
+
+                <!-- Outstanding Balance Info -->
+                <div class="mb-4 sm:mb-6 p-3 sm:p-4 bg-blue-50 rounded-xl border border-blue-200">
+                    <p class="text-xs sm:text-sm text-gray-600 mb-1">Outstanding Balance</p>
+                    <p id="outstandingBalance" class="text-xl sm:text-2xl font-bold text-blue-600">KES 0.00</p>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="flex flex-col sm:flex-row gap-2 sm:space-x-3">
+                    <button type="button" onclick="closePaymentModal()" class="flex-1 px-3 sm:px-4 py-2 sm:py-3 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300 transition-colors duration-200 font-semibold text-sm sm:text-base">
+                        Cancel
+                    </button>
+                    <button type="submit" class="flex-1 px-3 sm:px-4 py-2 sm:py-3 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-colors duration-200 font-semibold text-sm sm:text-base">
+                        <i class="fas fa-check mr-2"></i>Process Payment
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Items Modal -->
+<div id="itemsModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-2 sm:p-4">
+    <div class="bg-white rounded-2xl sm:rounded-3xl shadow-2xl max-w-2xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto">
+        <div class="p-4 sm:p-6 border-b border-gray-200">
+            <div class="flex items-center justify-between">
+                <h3 class="text-xl sm:text-2xl font-bold text-gray-800">Transaction Items</h3>
+                <button onclick="closeItemsModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
+                    <i class="fas fa-times text-lg sm:text-xl"></i>
+                </button>
+            </div>
+        </div>
+        <div class="p-4 sm:p-6">
+            <div id="itemsModalContent">
+                <div class="text-center py-8">
+                    <i class="fas fa-spinner fa-spin text-2xl sm:text-3xl text-gray-400 mb-4"></i>
+                    <p class="text-gray-600 text-sm sm:text-base">Loading items...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Transactions Table -->
+<div class="bg-white rounded-2xl sm:rounded-3xl shadow-2xl border border-gray-100">
+    <div class="p-4 sm:p-6 lg:p-8 border-b border-gray-200">
+        <h2 class="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Credit Transactions</h2>
+        <p class="text-gray-600 text-sm sm:text-base">All credit sales transactions for this company</p>
+    </div>
+    <div class="p-4 sm:p-6 lg:p-8">
+        <!-- Loading State -->
+        <div id="loadingState" class="text-center py-12">
+            <div class="inline-flex items-center text-gray-600">
+                <i class="fas fa-spinner fa-spin mr-2"></i>
+                <span>Loading transactions...</span>
+            </div>
+        </div>
+
+        <!-- Error State -->
+        <div id="errorState" class="hidden text-center py-12">
+            <div class="text-red-600 mb-4">
+                <i class="fas fa-exclamation-triangle text-3xl mb-2"></i>
+                <p class="font-semibold">Failed to load transactions</p>
+                <p id="errorMessage" class="text-sm mt-2"></p>
+            </div>
+            <button onclick="loadTransactions()" class="px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors duration-200 font-semibold">
+                <i class="fas fa-redo mr-2"></i>Retry
+            </button>
+        </div>
+
+        <!-- Empty State -->
+        <div id="emptyState" class="hidden text-center py-12">
+            <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <i class="fas fa-receipt text-gray-400 text-3xl"></i>
+            </div>
+            <h3 class="text-xl font-bold text-gray-800 mb-2">No Transactions Found</h3>
+            <p class="text-gray-600 mb-6">No credit transactions have been recorded for this company yet.</p>
+        </div>
+
+        <!-- Transactions Table (Desktop) -->
+        <div id="transactionsTable" class="hidden overflow-x-auto -mx-4 sm:mx-0">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Receipt Number</th>
+                        <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">Sale Date</th>
+                        <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden lg:table-cell">Employee</th>
+                        <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden xl:table-cell">Subtotal</th>
+                        <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden xl:table-cell">Tax</th>
+                        <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Amount</th>
+                        <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Paid</th>
+                        <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Outstanding</th>
+                        <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">Payment Status</th>
+                        <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden lg:table-cell">Status</th>
+                        <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Items</th>
+                    </tr>
+                </thead>
+                <tbody id="transactionsTableBody" class="bg-white divide-y divide-gray-200">
+                    <!-- Transactions will be inserted here via JavaScript -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Transactions Cards (Mobile) -->
+        <div id="transactionsCards" class="hidden space-y-4">
+            <!-- Cards will be inserted here via JavaScript -->
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    const companyId = {{ company_id if company_id else 0 }};
+
+    document.addEventListener('DOMContentLoaded', function() {
+        loadTransactions();
+    });
+
+    function loadTransactions() {
+        const loadingState = document.getElementById('loadingState');
+        const errorState = document.getElementById('errorState');
+        const emptyState = document.getElementById('emptyState');
+        const transactionsTable = document.getElementById('transactionsTable');
+        const transactionsTableBody = document.getElementById('transactionsTableBody');
+        const errorMessage = document.getElementById('errorMessage');
+        const companyInfoCard = document.getElementById('companyInfoCard');
+
+        // Show loading state
+        loadingState.classList.remove('hidden');
+        errorState.classList.add('hidden');
+        emptyState.classList.add('hidden');
+        transactionsTable.classList.add('hidden');
+        document.getElementById('transactionsCards').classList.add('hidden');
+        companyInfoCard.classList.add('hidden');
+
+        fetch(`/api/credit-companies/${companyId}/transactions`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            loadingState.classList.add('hidden');
+
+            if (data.success) {
+                const company = data.company;
+                const transactions = data.transactions || [];
+
+                // Display company information
+                document.getElementById('companyName').textContent = company.name || 'N/A';
+                document.getElementById('companyPhone').textContent = company.phone_number || 'N/A';
+                document.getElementById('companyId').textContent = company.company_id || 'N/A';
+                
+                const totalAmount = data.total_credit_amount || 0;
+                const formattedTotal = totalAmount.toLocaleString('en-US', {
+                    style: 'currency',
+                    currency: 'KES',
+                    minimumFractionDigits: 2
+                });
+                document.getElementById('totalCreditAmount').textContent = formattedTotal;
+                document.getElementById('transactionCount').textContent = data.transaction_count || 0;
+                
+                companyInfoCard.classList.remove('hidden');
+
+                if (transactions.length === 0) {
+                    emptyState.classList.remove('hidden');
+                    transactionsTable.classList.add('hidden');
+                    document.getElementById('transactionsCards').classList.add('hidden');
+                } else {
+                    // Clear existing rows
+                    transactionsTableBody.innerHTML = '';
+
+                    // Store transactions globally for outstanding balance calculation
+                    window.allTransactions = transactions;
+
+                    // Add transactions to table
+                    transactions.forEach(transaction => {
+                        const row = document.createElement('tr');
+                        row.className = 'hover:bg-gray-50 transition-colors';
+
+                        const saleDate = transaction.sale_date 
+                            ? new Date(transaction.sale_date).toLocaleString('en-US', {
+                                year: 'numeric',
+                                month: 'short',
+                                day: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                            })
+                            : 'N/A';
+
+                        const subtotal = transaction.subtotal || 0;
+                        const tax = transaction.tax_amount || 0;
+                        const total = transaction.total_amount || 0;
+                        const paidAmount = transaction.paid_amount || 0;
+                        const outstanding = transaction.outstanding_amount || 0;
+
+                        const formattedSubtotal = subtotal.toLocaleString('en-US', {
+                            style: 'currency',
+                            currency: 'KES',
+                            minimumFractionDigits: 2
+                        });
+
+                        const formattedTax = tax.toLocaleString('en-US', {
+                            style: 'currency',
+                            currency: 'KES',
+                            minimumFractionDigits: 2
+                        });
+
+                        const formattedTotal = total.toLocaleString('en-US', {
+                            style: 'currency',
+                            currency: 'KES',
+                            minimumFractionDigits: 2
+                        });
+
+                        const formattedPaid = paidAmount.toLocaleString('en-US', {
+                            style: 'currency',
+                            currency: 'KES',
+                            minimumFractionDigits: 2
+                        });
+
+                        const formattedOutstanding = outstanding.toLocaleString('en-US', {
+                            style: 'currency',
+                            currency: 'KES',
+                            minimumFractionDigits: 2
+                        });
+
+                        const paymentStatusClass = transaction.payment_status === 'fully_paid'
+                            ? 'bg-green-100 text-green-800'
+                            : transaction.payment_status === 'partially_paid'
+                            ? 'bg-yellow-100 text-yellow-800'
+                            : 'bg-red-100 text-red-800';
+
+                        const statusClass = transaction.status === 'confirmed' 
+                            ? 'bg-green-100 text-green-800' 
+                            : transaction.status === 'pending'
+                            ? 'bg-yellow-100 text-yellow-800'
+                            : 'bg-red-100 text-red-800';
+
+                        const paymentStatusText = transaction.payment_status === 'fully_paid'
+                            ? 'Fully Paid'
+                            : transaction.payment_status === 'partially_paid'
+                            ? 'Partially Paid'
+                            : 'Unpaid';
+
+                        row.innerHTML = `
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm font-medium text-gray-900">${escapeHtml(transaction.receipt_number)}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-gray-900">${saleDate}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-gray-900">${escapeHtml(transaction.employee_name || 'N/A')}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-gray-900">${formattedSubtotal}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-gray-900">${formattedTax}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm font-semibold text-gray-900">${formattedTotal}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-gray-900">${formattedPaid}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm font-semibold ${outstanding > 0 ? 'text-red-600' : 'text-green-600'}">${formattedOutstanding}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-2 py-1 text-xs font-semibold rounded-full ${paymentStatusClass}">
+                                    ${paymentStatusText}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-2 py-1 text-xs font-semibold rounded-full ${statusClass}">
+                                    ${escapeHtml(transaction.status || 'pending')}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <button onclick="viewTransactionItems(${transaction.id})" class="text-blue-600 hover:text-blue-800 transition-colors" title="View Items">
+                                    <i class="fas fa-eye text-lg"></i>
+                                </button>
+                            </td>
+                        `;
+
+                        transactionsTableBody.appendChild(row);
+                    });
+
+                    // Update outstanding balance in modal
+                    updateOutstandingBalance();
+
+                    transactionsTable.classList.remove('hidden');
+                }
+            } else {
+                errorMessage.textContent = data.message || 'Failed to load transactions';
+                errorState.classList.remove('hidden');
+            }
+        })
+        .catch(error => {
+            console.error('Error loading transactions:', error);
+            loadingState.classList.add('hidden');
+            errorMessage.textContent = 'An error occurred while loading transactions';
+            errorState.classList.remove('hidden');
+        });
+    }
+
+    function refreshTransactions() {
+        loadTransactions();
+    }
+
+    function updateOutstandingBalance() {
+        if (window.allTransactions) {
+            const totalOutstanding = window.allTransactions.reduce((sum, t) => sum + (t.outstanding_amount || 0), 0);
+            const formatted = totalOutstanding.toLocaleString('en-US', {
+                style: 'currency',
+                currency: 'KES',
+                minimumFractionDigits: 2
+            });
+            document.getElementById('outstandingBalance').textContent = formatted;
+        }
+    }
+
+    function openPaymentModal() {
+        const modal = document.getElementById('paymentModal');
+        modal.classList.remove('hidden');
+        updateOutstandingBalance();
+        // Reset form
+        document.getElementById('paymentForm').reset();
+        document.getElementById('paymentMethod').value = '';
+        document.getElementById('phoneNumberField').classList.add('hidden');
+        document.getElementById('phoneNumber').required = false;
+        // Reset payment method buttons
+        document.querySelectorAll('.payment-method-btn').forEach(btn => {
+            btn.classList.remove('border-blue-500', 'bg-blue-50', 'border-green-500', 'bg-green-50', 'border-purple-500', 'bg-purple-50');
+            btn.classList.add('border-gray-300');
+        });
+    }
+
+    function closePaymentModal() {
+        const modal = document.getElementById('paymentModal');
+        modal.classList.add('hidden');
+    }
+
+    function selectPaymentMethod(method) {
+        document.getElementById('paymentMethod').value = method;
+        
+        // Reset all buttons
+        document.querySelectorAll('.payment-method-btn').forEach(btn => {
+            btn.classList.remove('border-blue-500', 'bg-blue-50', 'border-green-500', 'bg-green-50', 'border-purple-500', 'bg-purple-50');
+            btn.classList.add('border-gray-300');
+        });
+
+        // Highlight selected button
+        const phoneField = document.getElementById('phoneNumberField');
+        const phoneInput = document.getElementById('phoneNumber');
+        
+        if (method === 'cash') {
+            document.getElementById('cashBtn').classList.remove('border-gray-300');
+            document.getElementById('cashBtn').classList.add('border-blue-500', 'bg-blue-50');
+            phoneField.classList.add('hidden');
+            phoneInput.required = false;
+        } else if (method === 'mpesa') {
+            document.getElementById('mpesaBtn').classList.remove('border-gray-300');
+            document.getElementById('mpesaBtn').classList.add('border-green-500', 'bg-green-50');
+            phoneField.classList.remove('hidden');
+            phoneInput.required = true;
+        } else if (method === 'card') {
+            document.getElementById('cardBtn').classList.remove('border-gray-300');
+            document.getElementById('cardBtn').classList.add('border-purple-500', 'bg-purple-50');
+            phoneField.classList.add('hidden');
+            phoneInput.required = false;
+        }
+    }
+
+    function processPayment(event) {
+        event.preventDefault();
+        
+        const form = document.getElementById('paymentForm');
+        const formData = new FormData(form);
+        const paymentMethod = document.getElementById('paymentMethod').value;
+        
+        if (!paymentMethod) {
+            alert('Please select a payment method');
+            return;
+        }
+
+        const data = {
+            payment_method: paymentMethod,
+            amount_paid: parseFloat(formData.get('amount_paid')),
+            payer_name: formData.get('payer_name').trim()
+        };
+
+        if (paymentMethod === 'mpesa') {
+            const phoneNumber = formData.get('phone_number');
+            if (!phoneNumber || !phoneNumber.trim()) {
+                alert('Phone number is required for M-Pesa payments');
+                return;
+            }
+            data.phone_number = phoneNumber.trim();
+        }
+
+        // Show loading state
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Processing...';
+
+        fetch(`/api/credit-companies/${companyId}/payments`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(result => {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalText;
+
+            if (result.success) {
+                alert(`Payment processed successfully!\nTotal Amount Paid: KES ${result.total_amount_paid.toLocaleString('en-US', {minimumFractionDigits: 2})}\n${result.remaining_payment > 0 ? `Remaining: KES ${result.remaining_payment.toLocaleString('en-US', {minimumFractionDigits: 2})}` : 'All payments applied.'}`);
+                closePaymentModal();
+                loadTransactions(); // Reload transactions to show updated data
+            } else {
+                alert('Error: ' + (result.message || 'Failed to process payment'));
+            }
+        })
+        .catch(error => {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalText;
+            console.error('Error processing payment:', error);
+            alert('An error occurred while processing the payment. Please try again.');
+        });
+    }
+
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    function viewTransactionItems(saleId) {
+        const modal = document.getElementById('itemsModal');
+        const content = document.getElementById('itemsModalContent');
+        
+        modal.classList.remove('hidden');
+        content.innerHTML = `
+            <div class="text-center py-8">
+                <i class="fas fa-spinner fa-spin text-3xl text-gray-400 mb-4"></i>
+                <p class="text-gray-600">Loading items...</p>
+            </div>
+        `;
+        
+        fetch(`/api/sales/${saleId}/items`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.items && data.items.length > 0) {
+                let itemsHtml = '<div class="space-y-4">';
+                data.items.forEach(item => {
+                    const totalPrice = (item.quantity || 0) * (item.unit_price || 0);
+                    itemsHtml += `
+                        <div class="border border-gray-200 rounded-xl p-3 sm:p-4 hover:bg-gray-50 transition-colors">
+                            <div class="flex items-center justify-between">
+                                <div class="flex-1">
+                                    <h4 class="font-semibold text-gray-900 mb-1 text-sm sm:text-base">${escapeHtml(item.item_name || 'N/A')}</h4>
+                                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-4 text-xs sm:text-sm text-gray-600">
+                                        <div>
+                                            <span class="font-medium">Quantity:</span> ${item.quantity || 0}
+                                        </div>
+                                        <div>
+                                            <span class="font-medium">Unit Price:</span> KES ${(item.unit_price || 0).toLocaleString('en-US', {minimumFractionDigits: 2})}
+                                        </div>
+                                        <div>
+                                            <span class="font-medium">Total:</span> KES ${totalPrice.toLocaleString('en-US', {minimumFractionDigits: 2})}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+                itemsHtml += '</div>';
+                
+                const receiptNumber = data.receipt_number || 'N/A';
+                content.innerHTML = `
+                    <div class="mb-4 pb-4 border-b border-gray-200">
+                        <p class="text-sm text-gray-500">Receipt Number</p>
+                        <p class="text-lg font-bold text-gray-900">${escapeHtml(receiptNumber)}</p>
+                    </div>
+                    ${itemsHtml}
+                `;
+            } else {
+                content.innerHTML = `
+                    <div class="text-center py-8">
+                        <i class="fas fa-box-open text-4xl text-gray-400 mb-4"></i>
+                        <p class="text-gray-600">No items found for this transaction</p>
+                    </div>
+                `;
+            }
+        })
+        .catch(error => {
+            console.error('Error loading items:', error);
+            content.innerHTML = `
+                <div class="text-center py-8">
+                    <i class="fas fa-exclamation-triangle text-4xl text-red-400 mb-4"></i>
+                    <p class="text-red-600">Error loading items. Please try again.</p>
+                </div>
+            `;
+        });
+    }
+
+    function closeItemsModal() {
+        const modal = document.getElementById('itemsModal');
+        modal.classList.add('hidden');
+    }
+
+    // Handle window resize to switch between table and cards
+    let resizeTimeout;
+    window.addEventListener('resize', function() {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(function() {
+            if (window.allTransactions && window.allTransactions.length > 0) {
+                loadTransactions();
+            }
+        }, 250);
+    });
+
+    // Close modal when clicking outside
+    document.getElementById('paymentModal')?.addEventListener('click', function(e) {
+        if (e.target === this) {
+            closePaymentModal();
+        }
+    });
+
+    document.getElementById('itemsModal')?.addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeItemsModal();
+        }
+    });
+
+    function downloadPDF() {
+        window.location.href = `/api/credit-companies/${companyId}/export-pdf`;
+    }
+
+    function exportToWhatsApp() {
+        // Show loading
+        const btn = event.target.closest('button');
+        const originalText = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Generating...';
+
+        fetch(`/api/credit-companies/${companyId}/whatsapp-link`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(result => {
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+
+            if (result.success) {
+                // Download PDF first
+                const downloadLink = document.createElement('a');
+                downloadLink.href = result.pdf_url;
+                downloadLink.download = `Credit_Report_${companyId}_${new Date().getTime()}.pdf`;
+                document.body.appendChild(downloadLink);
+                downloadLink.click();
+                document.body.removeChild(downloadLink);
+                
+                // Wait a moment for download to start, then open WhatsApp
+                setTimeout(() => {
+                    // Create message without PDF link since we're sending the file
+                    const message = `Credit Report for ${result.company_name || 'Company'}\n\nI'm sending you the credit account statement. Please check your downloads folder and attach the PDF file.`;
+                    const encodedMessage = encodeURIComponent(message);
+                    const whatsappLink = `https://wa.me/${result.phone_number_formatted || result.phone_number}?text=${encodedMessage}`;
+                    
+                    // Show instructions
+                    alert('PDF downloaded! Please:\n1. Open WhatsApp (it will open in a new tab)\n2. Attach the PDF file from your Downloads folder\n3. Send the message');
+                    
+                    // Open WhatsApp
+                    window.open(whatsappLink, '_blank');
+                }, 1000);
+            } else {
+                alert('Error: ' + (result.message || 'Failed to generate WhatsApp link'));
+            }
+        })
+        .catch(error => {
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+            console.error('Error generating WhatsApp link:', error);
+            alert('An error occurred. Please try again.');
+        });
+    }
+</script>
+{% endblock %}
+
