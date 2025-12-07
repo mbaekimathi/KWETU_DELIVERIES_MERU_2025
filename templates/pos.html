@@ -1,4 +1,4 @@
-{% if employee_role == 'admin' or employee_role == 'manager' or employee_role == 'cashier' or employee_role == 'employee' %}
+{% if employee_role == 'admin' or employee_role == 'manager' or employee_role == 'cashier' or employee_role == 'employee' or employee_role == 'butchery' %}
 {% extends "role_base.html" %}
 {% else %}
 {% extends "base.html" %}
@@ -6,9 +6,9 @@
 
 {% block title %}Point of Sale - Hotel POS System{% endblock %}
 
-{% if employee_role == 'admin' or employee_role == 'manager' or employee_role == 'cashier' or employee_role == 'employee' %}
-{% block sidebar_icon %}{% if employee_role == 'admin' %}crown{% elif employee_role == 'manager' %}user-tie{% elif employee_role == 'cashier' %}cash-register{% else %}user{% endif %}{% endblock %}
-{% block sidebar_title %}{% if employee_role == 'admin' %}Admin Panel{% elif employee_role == 'manager' %}Manager Panel{% elif employee_role == 'cashier' %}Cashier Panel{% else %}Employee Panel{% endif %}{% endblock %}
+{% if employee_role == 'admin' or employee_role == 'manager' or employee_role == 'cashier' or employee_role == 'employee' or employee_role == 'butchery' %}
+{% block sidebar_icon %}{% if employee_role == 'admin' %}crown{% elif employee_role == 'manager' %}user-tie{% elif employee_role == 'cashier' %}cash-register{% elif employee_role == 'butchery' %}drumstick-bite{% else %}user{% endif %}{% endblock %}
+{% block sidebar_title %}{% if employee_role == 'admin' %}Admin Panel{% elif employee_role == 'manager' %}Manager Panel{% elif employee_role == 'cashier' %}Cashier Panel{% elif employee_role == 'butchery' %}Butchery Panel{% else %}Employee Panel{% endif %}{% endblock %}
 
 {% block sidebar_nav %}
 {% if employee_role == 'admin' %}
@@ -215,6 +215,27 @@
         <p class="text-xs text-white/70">Manage profile</p>
     </div>
 </a>
+{% elif employee_role == 'butchery' %}
+<!-- Point of Sale -->
+<a href="/pos" class="nav-item flex items-center px-4 py-4 text-white rounded-2xl bg-white/20 transition-all duration-200 group">
+    <div class="w-10 h-10 bg-white/30 rounded-xl flex items-center justify-center mr-4">
+        <i class="fas fa-shopping-cart text-white text-lg"></i>
+    </div>
+    <div>
+        <p class="font-semibold">Butchery Sale</p>
+        <p class="text-xs text-white/70">Process sales</p>
+    </div>
+</a>
+<!-- Butchery Dashboard -->
+<a href="/butchery/dashboard" class="nav-item flex items-center px-4 py-4 text-white rounded-2xl hover:bg-white/20 transition-all duration-200 group">
+    <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center mr-4 group-hover:bg-white/30 transition-colors duration-200">
+        <i class="fas fa-clipboard-list text-white text-lg"></i>
+    </div>
+    <div>
+        <p class="font-semibold">Meat Orders</p>
+        <p class="text-xs text-white/70">Manage orders</p>
+    </div>
+</a>
 {% endif %}
 {% endblock %}
 {% endif %}
@@ -387,9 +408,9 @@
 <!-- Mobile Cart Popup -->
 <div id="mobileCartPopup" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden md:hidden">
     <div class="flex items-end justify-center min-h-screen p-2 sm:p-4">
-        <div id="mobileCartContent" class="bg-white rounded-t-2xl sm:rounded-t-3xl w-full max-w-sm sm:max-w-md lg:max-w-lg xl:max-w-xl max-h-[85vh] sm:max-h-[80vh] overflow-hidden transform transition-transform duration-300 translate-y-full shadow-2xl">
+        <div id="mobileCartContent" class="bg-white rounded-t-2xl sm:rounded-t-3xl w-full max-w-sm sm:max-w-md lg:max-w-lg xl:max-w-xl max-h-[85vh] sm:max-h-[80vh] overflow-hidden transform transition-transform duration-300 translate-y-full shadow-2xl flex flex-col">
             <!-- Mobile Cart Header -->
-            <div class="flex items-center justify-between p-3 sm:p-4 border-b border-gray-200 bg-gradient-to-r from-primary-orange to-secondary-orange text-white">
+            <div class="flex items-center justify-between p-3 sm:p-4 border-b border-gray-200 bg-gradient-to-r from-primary-orange to-secondary-orange text-white flex-shrink-0">
                 <div class="flex items-center space-x-2 sm:space-x-3">
                     <div class="w-6 h-6 sm:w-8 sm:h-8 bg-white bg-opacity-20 rounded-lg sm:rounded-xl flex items-center justify-center">
                         <i class="fas fa-shopping-cart text-white text-xs sm:text-sm"></i>
@@ -402,7 +423,7 @@
             </div>
         
             <!-- Mobile Cart Content -->
-            <div class="flex-1 overflow-y-auto p-3 sm:p-4">
+            <div id="mobileCartScrollableContent" class="flex-1 overflow-y-auto p-3 sm:p-4 min-h-0" style="-webkit-overflow-scrolling: touch;">
                 <!-- Mobile Order Items -->
                 <div id="mobileOrderItems" class="space-y-2 sm:space-y-3 mb-3 sm:mb-4">
                     <!-- Empty cart state -->
@@ -1327,6 +1348,41 @@
         }
     }
     
+    /* Mobile cart scrolling improvements */
+    #mobileCartScrollableContent {
+        scroll-behavior: smooth;
+        overscroll-behavior: contain;
+    }
+    
+    /* Custom scrollbar for mobile cart */
+    #mobileCartScrollableContent::-webkit-scrollbar {
+        width: 6px;
+    }
+    
+    #mobileCartScrollableContent::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    
+    #mobileCartScrollableContent::-webkit-scrollbar-thumb {
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 3px;
+    }
+    
+    #mobileCartScrollableContent::-webkit-scrollbar-thumb:hover {
+        background: rgba(0, 0, 0, 0.3);
+    }
+    
+    /* Firefox scrollbar styling */
+    #mobileCartScrollableContent {
+        scrollbar-width: thin;
+        scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+    }
+    
+    /* Ensure cart items container is scrollable */
+    #mobileOrderItems {
+        min-height: fit-content;
+    }
+    
     /* Stock Display Styling */
     .stock-low {
         background-color: #fef2f2 !important;
@@ -1858,6 +1914,13 @@
             if (data.success) {
                 allItems = data.items;
                 filteredItems = [...allItems];
+                
+                // Show butchery mode indicator if user is butchery
+                const employeeRole = '{{ employee_role|default("") }}';
+                if (employeeRole === 'butchery') {
+                    showButcheryModeIndicator();
+                }
+                
                 renderMenuItems();
                 renderCategoryFilters();
             } else {
@@ -1866,6 +1929,31 @@
         } catch (error) {
             console.error('Error loading menu items:', error);
             showEmptyState();
+        }
+    }
+    
+    // Show butchery mode indicator
+    function showButcheryModeIndicator() {
+        // Check if indicator already exists
+        let indicator = document.getElementById('butcheryModeIndicator');
+        if (!indicator) {
+            // Create indicator banner
+            indicator = document.createElement('div');
+            indicator.id = 'butcheryModeIndicator';
+            indicator.className = 'bg-gradient-to-r from-red-600 to-red-700 text-white px-4 py-3 text-center font-bold shadow-lg mb-4 rounded-lg';
+            indicator.innerHTML = '<i class="fas fa-drumstick-bite mr-2"></i>BUTCHERY MODE - Showing Butchery Items Only';
+            
+            // Insert after the header
+            const header = document.querySelector('.bg-gradient-to-br.from-slate-900');
+            if (header && header.parentNode) {
+                header.parentNode.insertBefore(indicator, header.nextSibling);
+            } else {
+                // Fallback: insert at the top of the content area
+                const contentArea = document.querySelector('.container.mx-auto') || document.querySelector('body');
+                if (contentArea) {
+                    contentArea.insertBefore(indicator, contentArea.firstChild);
+                }
+            }
         }
     }
 
@@ -5615,10 +5703,10 @@
         }
     }
 
-    // Load hotel settings to check if credit sale is enabled
+    // Load hotel settings to check if credit sale is enabled and tax settings (like pos_hold.html)
     async function loadHotelSettings() {
         try {
-            // Fetch from API to get current enable_credit_sale setting
+            // Fetch from API to get current enable_credit_sale setting and tax setting
             const response = await fetch('/api/pos/hotel-settings');
             if (response.ok) {
                 const data = await response.json();
@@ -5651,12 +5739,32 @@
                         console.log('Credit sale enabled from hotel settings (error fallback):', creditSaleEnabled);
                     }
                     
+                    // Check include_tax from hotel settings (like pos_hold.html does)
+                    if (data.hasOwnProperty('include_tax')) {
+                        const hotelIncludeTax = data.include_tax === true || data.include_tax === 1 || 
+                                               data.include_tax === '1' || data.include_tax === 'True' || 
+                                               data.include_tax === 'true';
+                        console.log('Tax toggle from hotel settings:', hotelIncludeTax);
+                        // Update tax setting in localStorage to match hotel settings
+                        const savedSettings = JSON.parse(localStorage.getItem('pos-settings') || '{}');
+                        if (!savedSettings.tax) {
+                            savedSettings.tax = {};
+                        }
+                        savedSettings.tax.include = hotelIncludeTax;
+                        localStorage.setItem('pos-settings', JSON.stringify(savedSettings));
+                        // Update cart display if cart is already populated
+                        if (currentOrder.length > 0) {
+                            updateOrderSummary();
+                        }
+                    }
+                    
                     // Update sale type section visibility
                     updateSaleTypeVisibility();
                 }
             }
         } catch (error) {
             console.error('Error loading hotel settings:', error);
+            // Default to true if error
         }
     }
 
@@ -7674,20 +7782,6 @@
 
         const subtotal = currentOrder.reduce((sum, item) => sum + (item.price * item.quantity), 0);
         
-        // Apply printing settings - check include_tax from printing settings if provided
-        let includeTax;
-        if (printingSettings && printingSettings.hasOwnProperty('include_tax')) {
-            includeTax = printingSettings.include_tax;
-            console.log('Using include_tax from printing settings:', includeTax);
-        } else {
-            includeTax = getTaxSetting(); // Fallback to existing method
-            console.log('Using include_tax from getTaxSetting():', includeTax);
-        }
-        
-        const tax = includeTax ? subtotal * 0.08 : 0;
-        const total = subtotal + tax;
-        console.log('Receipt totals - Subtotal:', subtotal, 'Tax:', tax, 'Total:', total, 'Tax included:', includeTax);
-        
         const now = new Date();
         const dateStr = now.toLocaleDateString();
         const timeStr = now.toLocaleTimeString();
@@ -7745,6 +7839,26 @@
                 };
             }
         }
+        
+        // Check include_tax from hotel settings (like pos_hold.html does)
+        // First check printing settings, then hotel settings, then fallback
+        let includeTax = getTaxSetting(); // Default fallback
+        if (printingSettings && printingSettings.hasOwnProperty('include_tax')) {
+            includeTax = printingSettings.include_tax;
+            console.log('Using include_tax from printing settings:', includeTax);
+        } else if (hotelSettings.hasOwnProperty('include_tax')) {
+            includeTax = hotelSettings.include_tax === true || hotelSettings.include_tax === 1 || 
+                         hotelSettings.include_tax === '1' || hotelSettings.include_tax === 'True' || 
+                         hotelSettings.include_tax === 'true';
+            console.log('Using include_tax from hotel settings:', includeTax);
+        } else {
+            includeTax = getTaxSetting(); // Fallback to existing method
+            console.log('Using include_tax from getTaxSetting():', includeTax);
+        }
+        
+        const tax = includeTax ? subtotal * 0.08 : 0;
+        const total = subtotal + tax;
+        console.log('Receipt totals - Subtotal:', subtotal, 'Tax:', tax, 'Total:', total, 'Tax included:', includeTax);
         
         // Get display name (use receipt header title if set, otherwise hotel name)
         let displayHotelName = receiptSettings.receipt_header_title || hotelSettings.hotel_name || hotelName;
@@ -7954,8 +8068,12 @@
             receipt += 'Visit us again soon!\n';
         }
         
-        // Add QR code if enabled
-        if (receiptSettings.receipt_show_qr) {
+        // Add QR code if enabled in hotel settings (matching pos_hold.html pattern)
+        const showQR = receiptSettings.receipt_show_qr === true || receiptSettings.receipt_show_qr === 1 || 
+                      receiptSettings.receipt_show_qr === '1' || receiptSettings.receipt_show_qr === 'True' || 
+                      receiptSettings.receipt_show_qr === 'true';
+        
+        if (showQR) {
             receipt += '\n';
             // Generate QR code URL for this specific receipt
             const baseUrl = window.location.origin;

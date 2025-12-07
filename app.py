@@ -41,7 +41,7 @@ DB_CONFIG = {
     'host': os.environ.get('DB_HOST', 'localhost'),
     'user': os.environ.get('DB_USER', 'root'),
     'password': os.environ.get('DB_PASSWORD', ''),
-    'database': os.environ.get('DB_NAME', 'point_of_sale'),
+    'database': 'point_of_sale',  # Explicitly set to point_of_sale (POS system, not school)
     'charset': 'utf8mb4',
     'use_unicode': True
 }
@@ -884,7 +884,7 @@ def get_role_dashboard_url(role):
         'admin': '/admin/dashboard',
         'manager': '/manager/dashboard',
         'cashier': '/pos',  # Cashiers go to POS
-        'butchery': '/butchery/dashboard',
+        'butchery': '/pos',  # Butchery users go to POS for sales
         'employee': '/pos',  # Regular employees go to POS
         'technical_support': '/technical-support/dashboard',
         'technical support': '/technical-support/dashboard',  # Handle space variant
@@ -7116,15 +7116,41 @@ def get_pos_items():
         return jsonify({'success': False, 'message': 'Database connection failed'})
     
     try:
+        # Check if user is butchery - filter to butchery items only
+        employee_role = session.get('employee_role', '').lower()
+        is_butchery = employee_role == 'butchery'
+        
         with connection.cursor() as cursor:
-            # Get only active items for POS
-            cursor.execute("""
-                SELECT id, name, description, price, category, stock, 
-                       image_url, sku, stock_update_enabled
-                FROM items 
-                WHERE status = 'active'
-                ORDER BY category, name
-            """)
+            # Build query based on role
+            if is_butchery:
+                # For butchery users, only show items with butchery-related categories
+                # Categories: Meat, Butchery, Beef, Chicken, or any category containing these keywords
+                cursor.execute("""
+                    SELECT id, name, description, price, category, stock, 
+                           image_url, sku, stock_update_enabled
+                    FROM items 
+                    WHERE status = 'active'
+                    AND (
+                        LOWER(category) LIKE '%meat%' 
+                        OR LOWER(category) LIKE '%butchery%'
+                        OR LOWER(category) LIKE '%beef%'
+                        OR LOWER(category) LIKE '%chicken%'
+                        OR LOWER(category) LIKE '%pork%'
+                        OR LOWER(category) LIKE '%mutton%'
+                        OR LOWER(category) LIKE '%goat%'
+                    )
+                    ORDER BY category, name
+                """)
+            else:
+                # For other users, show all active items
+                cursor.execute("""
+                    SELECT id, name, description, price, category, stock, 
+                           image_url, sku, stock_update_enabled
+                    FROM items 
+                    WHERE status = 'active'
+                    ORDER BY category, name
+                """)
+            
             items = cursor.fetchall()
             
             items_list = []
