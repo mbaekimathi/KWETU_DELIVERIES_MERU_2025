@@ -1,0 +1,917 @@
+{% extends "base.html" %}
+
+{% block title %}Home - Kwetu Deliveries{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* Override container constraints for full-width scrolling */
+    main.container {
+        max-width: 100% !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+    }
+
+    /* Shop Cards Container */
+    .shops-container {
+        padding: 1.5rem 0;
+        max-width: 100%;
+        width: 100%;
+        overflow-x: hidden;
+        position: relative;
+    }
+
+    /* Category Section */
+    .category-section {
+        margin-bottom: 2rem;
+        width: 100%;
+        position: relative;
+    }
+
+    .category-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #0f172a;
+        margin-bottom: 1rem;
+        padding: 0 1rem;
+        letter-spacing: -0.02em;
+    }
+
+    /* Horizontal Scroll Container */
+    .shops-scroll-container {
+        position: relative;
+        overflow-x: auto;
+        overflow-y: hidden;
+        scroll-behavior: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+        padding: 0 1rem;
+        margin-bottom: 1.5rem;
+        width: 100%;
+        scroll-snap-type: none;
+        overscroll-behavior-x: contain;
+        will-change: scroll-position;
+        scroll-padding: 0 1rem;
+        /* Force hardware acceleration */
+        transform: translate3d(0, 0, 0);
+        -webkit-transform: translate3d(0, 0, 0);
+    }
+
+    .shops-scroll-container::-webkit-scrollbar {
+        display: none !important;
+        width: 0 !important;
+        height: 0 !important;
+        background: transparent !important;
+    }
+
+    /* Custom scrollbar - hidden by default, shown on hover */
+    .shops-scroll-container:hover::-webkit-scrollbar {
+        display: block;
+        height: 6px;
+    }
+
+    .shops-scroll-container:hover::-webkit-scrollbar-track {
+        background: rgba(241, 245, 249, 0.5);
+        border-radius: 10px;
+    }
+
+    .shops-scroll-container:hover::-webkit-scrollbar-thumb {
+        background: linear-gradient(135deg, #FF6B35 0%, #FF8C5A 100%);
+        border-radius: 10px;
+        transition: background 0.2s ease;
+    }
+
+    .shops-scroll-container:hover::-webkit-scrollbar-thumb:hover {
+        background: #FF6B35;
+    }
+
+    /* Scroll Fade Indicators */
+    .scroll-fade-left,
+    .scroll-fade-right {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 40px;
+        pointer-events: none;
+        z-index: 10;
+        transition: opacity 0.3s ease;
+    }
+
+    .scroll-fade-left {
+        left: 0;
+        background: linear-gradient(to right, rgba(255, 255, 255, 0.95), transparent);
+    }
+
+    .scroll-fade-right {
+        right: 0;
+        background: linear-gradient(to left, rgba(255, 255, 255, 0.95), transparent);
+    }
+
+    .scroll-fade-left.hidden,
+    .scroll-fade-right.hidden {
+        opacity: 0;
+    }
+
+    /* Shops Row */
+    .shops-row {
+        display: flex;
+        gap: 0.875rem;
+        padding-bottom: 0.5rem;
+        padding-right: 1rem;
+        min-width: max-content;
+        will-change: transform;
+    }
+
+    /* Shop Card */
+    .shop-card {
+        position: relative;
+        width: 180px;
+        height: 240px;
+        border-radius: 16px;
+        overflow: hidden;
+        cursor: pointer;
+        flex-shrink: 0;
+        background: #f1f5f9;
+        box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.06);
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
+        animation: fadeInUp 0.5s ease-out backwards;
+        scroll-snap-align: none;
+        scroll-snap-stop: normal;
+        will-change: transform;
+        touch-action: pan-x pan-y;
+    }
+
+    .shop-card:nth-child(1) { animation-delay: 0.1s; }
+    .shop-card:nth-child(2) { animation-delay: 0.2s; }
+    .shop-card:nth-child(3) { animation-delay: 0.3s; }
+    .shop-card:nth-child(4) { animation-delay: 0.4s; }
+    .shop-card:nth-child(5) { animation-delay: 0.5s; }
+    .shop-card:nth-child(6) { animation-delay: 0.6s; }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .shop-card:hover {
+        transform: translateY(-4px) scale(1.03);
+        box-shadow: 0 12px 16px -4px rgba(0, 0, 0, 0.15), 0 4px 6px -2px rgba(0, 0, 0, 0.1);
+    }
+
+    .shop-card:active {
+        transform: translateY(-2px) scale(1.01);
+    }
+
+    /* Coming Soon - Disabled State */
+    .shop-card.coming-soon-card {
+        opacity: 0.85;
+        cursor: not-allowed;
+        pointer-events: none;
+    }
+
+    .shop-card.coming-soon-card:hover {
+        transform: none;
+        box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.06);
+    }
+
+    /* Shop Card Background Image */
+    .shop-card-bg {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .shop-card-bg.fallback-bg {
+        background: linear-gradient(135deg, #FF6B35 0%, #004E89 100%);
+    }
+
+    .shop-card-bg.hidden {
+        display: none;
+    }
+
+    .shop-card-image {
+        display: block;
+    }
+
+    .shop-card:hover .shop-card-bg {
+        transform: scale(1.1);
+    }
+
+    /* Gradient Overlay - Top and Bottom */
+    .shop-card-overlay {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: linear-gradient(to bottom, rgba(0, 0, 0, 0.3) 0%, transparent 25%, transparent 50%, rgba(0, 0, 0, 0.85) 100%);
+    }
+
+    /* Status Badge at Top */
+    .shop-card-status-top {
+        position: absolute;
+        top: 0.75rem;
+        right: 0.75rem;
+        z-index: 20;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.375rem;
+        padding: 0.375rem 0.75rem;
+        border-radius: 12px;
+        font-size: 0.625rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .shop-card-status-top.open {
+        background: rgba(34, 197, 94, 0.3);
+        color: #86efac;
+        border: 1px solid rgba(34, 197, 94, 0.4);
+    }
+
+    .shop-card-status-top.closed {
+        background: rgba(239, 68, 68, 0.3);
+        color: #fca5a5;
+        border: 1px solid rgba(239, 68, 68, 0.4);
+    }
+
+    .shop-card-status-top.coming-soon {
+        background: rgba(251, 191, 36, 0.3);
+        color: #fde047;
+        border: 1px solid rgba(251, 191, 36, 0.4);
+    }
+
+    .shop-card-status-top .shop-card-status-icon {
+        width: 4px;
+        height: 4px;
+        border-radius: 50%;
+        background: currentColor;
+        animation: pulse 2s infinite;
+        flex-shrink: 0;
+    }
+
+    .shop-card-status-top.coming-soon .shop-card-status-icon {
+        animation: none;
+        background: #fde047;
+        box-shadow: 0 0 4px rgba(251, 191, 36, 0.6);
+    }
+
+    /* Glassmorphism Content */
+    .shop-card-content {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 0.875rem;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(16px) saturate(180%);
+        -webkit-backdrop-filter: blur(16px) saturate(180%);
+        border-top: 1px solid rgba(255, 255, 255, 0.2);
+        transform: translateY(0);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .shop-card:hover .shop-card-content {
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(20px) saturate(200%);
+        -webkit-backdrop-filter: blur(20px) saturate(200%);
+    }
+
+    /* Shop Name */
+    .shop-card-name {
+        font-size: 1rem;
+        font-weight: 700;
+        color: #ffffff;
+        margin-bottom: 0.375rem;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        line-height: 1.2;
+        letter-spacing: -0.01em;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        line-clamp: 2;
+        -webkit-box-orient: vertical;
+    }
+
+    /* Shop Location */
+    .shop-card-location {
+        font-size: 0.75rem;
+        font-weight: 500;
+        color: rgba(255, 255, 255, 0.9);
+        margin-bottom: 0.5rem;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+        display: flex;
+        align-items: center;
+        gap: 0.375rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .shop-card-location::before {
+        content: '📍';
+        font-size: 0.625rem;
+        opacity: 0.8;
+    }
+
+
+    @keyframes pulse {
+        0%, 100% {
+            opacity: 1;
+        }
+        50% {
+            opacity: 0.5;
+        }
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        color: #64748b;
+    }
+
+    .empty-state-icon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+
+    .empty-state-text {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+
+    .empty-state-subtext {
+        font-size: 1rem;
+        color: #94a3b8;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 1024px) {
+        .shop-card {
+            width: 170px;
+            height: 230px;
+        }
+
+        .shops-row {
+            gap: 0.75rem;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .shop-card {
+            width: 160px;
+            height: 220px;
+        }
+
+        .category-title {
+            font-size: 1.25rem;
+            padding: 0 0.75rem;
+            margin-bottom: 0.875rem;
+        }
+
+        .shops-scroll-container {
+            padding: 0 0.75rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .shops-row {
+            gap: 0.75rem;
+            padding-right: 0.75rem;
+        }
+
+        .shop-card-content {
+            padding: 0.75rem;
+        }
+
+        .shop-card-name {
+            font-size: 0.9375rem;
+        }
+
+        .shop-card-location {
+            font-size: 0.6875rem;
+        }
+
+        .shop-card-status-top {
+            top: 0.625rem;
+            right: 0.625rem;
+            padding: 0.3125rem 0.625rem;
+            font-size: 0.5625rem;
+        }
+
+        .shops-container {
+            padding: 1.25rem 0;
+        }
+
+        .category-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .scroll-fade-left,
+        .scroll-fade-right {
+            width: 30px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .shop-card {
+            width: 140px;
+            height: 200px;
+        }
+
+        .category-title {
+            font-size: 1.125rem;
+            margin-bottom: 0.75rem;
+            padding: 0 0.5rem;
+        }
+
+        .shops-container {
+            padding: 1rem 0;
+        }
+
+        .shops-scroll-container {
+            padding: 0 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .shops-row {
+            gap: 0.625rem;
+            padding-right: 0.5rem;
+        }
+
+        .shop-card-content {
+            padding: 0.625rem;
+        }
+
+        .shop-card-name {
+            font-size: 0.875rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .shop-card-location {
+            font-size: 0.625rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .shop-card-status-top {
+            top: 0.5rem;
+            right: 0.5rem;
+            padding: 0.25rem 0.5rem;
+            font-size: 0.5625rem;
+            gap: 0.25rem;
+        }
+
+        .shop-card-status-top .shop-card-status-icon {
+            width: 3px;
+            height: 3px;
+        }
+
+        .category-section {
+            margin-bottom: 1.25rem;
+        }
+
+        .scroll-fade-left,
+        .scroll-fade-right {
+            width: 20px;
+        }
+    }
+
+    @media (max-width: 360px) {
+        .shop-card {
+            width: 130px;
+            height: 190px;
+        }
+
+        .shops-row {
+            gap: 0.5rem;
+        }
+    }
+
+    /* Performance optimizations */
+    .shops-scroll-container,
+    .shops-row,
+    .shop-card {
+        transform: translateZ(0);
+        backface-visibility: hidden;
+        -webkit-backface-visibility: hidden;
+        perspective: 1000px;
+        -webkit-perspective: 1000px;
+    }
+
+    /* Smooth scrolling container */
+    .shops-scroll-container {
+        /* Force hardware acceleration */
+        transform: translate3d(0, 0, 0);
+        -webkit-transform: translate3d(0, 0, 0);
+        /* Smooth momentum scrolling */
+        -webkit-overflow-scrolling: touch;
+        /* Remove scroll friction - use auto for smooth native scrolling */
+        scroll-behavior: auto;
+    }
+
+    /* Smooth row animation */
+    .shops-row {
+        transform: translate3d(0, 0, 0);
+        -webkit-transform: translate3d(0, 0, 0);
+    }
+
+    /* Desktop-specific smooth scrolling */
+    @media (min-width: 769px) {
+        .shops-scroll-container {
+            /* Remove all scroll constraints for desktop */
+            scroll-snap-type: none;
+            scroll-behavior: auto;
+            /* Ensure smooth momentum */
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .shop-card {
+            scroll-snap-align: none;
+        }
+    }
+
+    /* Loading state */
+    .shops-container.loading {
+        opacity: 0.6;
+        pointer-events: none;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="shops-container">
+    {% if shops_by_category %}
+        {% for category, shops in shops_by_category.items() %}
+            <div class="category-section">
+                <h2 class="category-title">{{ category }}</h2>
+                <div class="shops-scroll-container" data-category="{{ category }}">
+                    <div class="scroll-fade-left" data-fade="left"></div>
+                    <div class="scroll-fade-right" data-fade="right"></div>
+                    <div class="shops-row">
+                        {% for shop in shops %}
+                            {% if shop.status == 'waiting_approval' %}
+                                <div class="shop-card coming-soon-card">
+                            {% else %}
+                                <a href="{{ url_for('view_public_shop', shop_id=shop.id) }}" class="shop-card">
+                            {% endif %}
+                                {% if shop.profile_image %}
+                                    {% set profile_img = shop.profile_image %}
+                                    {% if profile_img.startswith('uploads/') %}
+                                        {% set profile_img_path = profile_img %}
+                                    {% elif profile_img.startswith('profiles/') %}
+                                        {% set profile_img_path = 'uploads/' + profile_img %}
+                                    {% else %}
+                                        {% set profile_img_path = 'uploads/profiles/' + profile_img %}
+                                    {% endif %}
+                                    <img src="{{ url_for('static', filename=profile_img_path) }}" 
+                                         alt="{{ shop.name }}" 
+                                         class="shop-card-bg shop-card-image"
+                                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                {% endif %}
+                                <div class="shop-card-bg fallback-bg{% if shop.profile_image %} hidden{% endif %}"></div>
+                                <div class="shop-card-overlay"></div>
+                                <div class="shop-card-status-top {% if shop.status == 'waiting_approval' %}coming-soon{% else %}{{ shop.status }}{% endif %}">
+                                    <span class="shop-card-status-icon"></span>
+                                    <span>{% if shop.status == 'waiting_approval' %}COMING SOON{% else %}{{ shop.status|upper }}{% endif %}</span>
+                                </div>
+                                <div class="shop-card-content">
+                                    <h3 class="shop-card-name">{{ shop.name }}</h3>
+                                    {% if shop.location_name %}
+                                        <div class="shop-card-location">{{ shop.location_name }}</div>
+                                    {% endif %}
+                                </div>
+                            {% if shop.status == 'waiting_approval' %}
+                                </div>
+                            {% else %}
+                                </a>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <div class="empty-state">
+            <div class="empty-state-icon">🏪</div>
+            <div class="empty-state-text">No shops available</div>
+            <div class="empty-state-subtext">Check back later for new shops!</div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    (function() {
+        'use strict';
+
+        // Smooth scrolling utility with easing (for programmatic scrolling)
+        function smoothScroll(element, target, duration = 300) {
+            const start = element.scrollLeft;
+            const distance = target - start;
+            const startTime = performance.now();
+            
+            function easeOutCubic(t) {
+                return 1 - Math.pow(1 - t, 3);
+            }
+            
+            function animate(currentTime) {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                const ease = easeOutCubic(progress);
+                
+                element.scrollLeft = start + distance * ease;
+                
+                if (progress < 1) {
+                    requestAnimationFrame(animate);
+                }
+            }
+            
+            requestAnimationFrame(animate);
+        }
+
+        // Improved horizontal scrolling with mouse wheel
+        document.querySelectorAll('.shops-scroll-container').forEach(container => {
+            let isScrolling = false;
+            let scrollVelocity = 0;
+            let lastScrollTime = 0;
+            let lastScrollLeft = 0;
+            let animationFrame = null;
+            const leftFade = container.querySelector('[data-fade="left"]');
+            const rightFade = container.querySelector('[data-fade="right"]');
+            
+            // Update fade indicators
+            function updateFadeIndicators() {
+                const { scrollLeft, scrollWidth, clientWidth } = container;
+                const isAtStart = scrollLeft <= 5;
+                const isAtEnd = scrollLeft >= scrollWidth - clientWidth - 5;
+                
+                if (leftFade) {
+                    leftFade.classList.toggle('hidden', isAtStart);
+                }
+                if (rightFade) {
+                    rightFade.classList.toggle('hidden', isAtEnd);
+                }
+            }
+
+            // Initial check
+            updateFadeIndicators();
+
+            // Ultra-smooth momentum-based wheel scrolling for desktop
+            let wheelVelocity = 0;
+            let wheelMomentum = null;
+            let lastWheelTime = 0;
+            let wheelTimeout = null;
+            
+            container.addEventListener('wheel', (e) => {
+                // Only handle vertical wheel for horizontal scroll
+                if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    const now = performance.now();
+                    const timeDelta = now - lastWheelTime;
+                    
+                    // Calculate velocity with momentum accumulation
+                    if (timeDelta < 100 && timeDelta > 0) {
+                        // Accumulate velocity for smooth momentum
+                        wheelVelocity = wheelVelocity * 0.75 + e.deltaY * 1.2;
+                    } else {
+                        wheelVelocity = e.deltaY * 1.2;
+                    }
+                    
+                    lastWheelTime = now;
+                    
+                    // Cancel any existing momentum animation
+                    if (wheelMomentum) {
+                        cancelAnimationFrame(wheelMomentum);
+                        wheelMomentum = null;
+                    }
+                    
+                    // Apply immediate smooth scroll
+                    container.scrollLeft += wheelVelocity;
+                    updateFadeIndicators();
+                    
+                    // Apply smooth momentum after wheel stops
+                    if (wheelTimeout) {
+                        clearTimeout(wheelTimeout);
+                    }
+                    
+                    wheelTimeout = setTimeout(() => {
+                        // Start momentum animation with smooth deceleration
+                        let currentVelocity = wheelVelocity * 0.7;
+                        const friction = 0.93;
+                        const minVelocity = 0.3;
+                        
+                        function applyMomentum() {
+                            if (Math.abs(currentVelocity) > minVelocity) {
+                                container.scrollLeft += currentVelocity;
+                                currentVelocity *= friction;
+                                wheelMomentum = requestAnimationFrame(applyMomentum);
+                                updateFadeIndicators();
+                            } else {
+                                wheelMomentum = null;
+                                wheelVelocity = 0;
+                            }
+                        }
+                        
+                        wheelMomentum = requestAnimationFrame(applyMomentum);
+                    }, 60);
+                }
+            }, { passive: false });
+
+            // Enhanced touch scrolling with physics
+            let touchStartX = 0;
+            let touchStartY = 0;
+            let touchStartTime = 0;
+            let touchStartScrollLeft = 0;
+            let isHorizontalScroll = false;
+            let touchVelocity = 0;
+            let lastTouchX = 0;
+            let lastTouchTime = 0;
+            let momentumAnimation = null;
+            
+            container.addEventListener('touchstart', (e) => {
+                touchStartX = e.touches[0].clientX;
+                touchStartY = e.touches[0].clientY;
+                touchStartTime = performance.now();
+                touchStartScrollLeft = container.scrollLeft;
+                isHorizontalScroll = false;
+                touchVelocity = 0;
+                lastTouchX = touchStartX;
+                lastTouchTime = touchStartTime;
+                
+                // Cancel any momentum animation
+                if (momentumAnimation) {
+                    cancelAnimationFrame(momentumAnimation);
+                    momentumAnimation = null;
+                }
+            }, { passive: true });
+
+            container.addEventListener('touchmove', (e) => {
+                if (!touchStartX || !touchStartY) return;
+                
+                const touchX = e.touches[0].clientX;
+                const touchY = e.touches[0].clientY;
+                const now = performance.now();
+                const diffX = touchStartX - touchX;
+                const diffY = touchStartY - touchY;
+                
+                // Calculate velocity
+                if (lastTouchTime > 0) {
+                    const timeDelta = now - lastTouchTime;
+                    const distanceDelta = touchX - lastTouchX;
+                    if (timeDelta > 0) {
+                        touchVelocity = -distanceDelta / timeDelta;
+                    }
+                }
+                
+                lastTouchX = touchX;
+                lastTouchTime = now;
+                
+                // Determine scroll direction
+                if (!isHorizontalScroll && Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 10) {
+                    isHorizontalScroll = true;
+                }
+                
+                // Only prevent default if we're scrolling horizontally
+                if (isHorizontalScroll || Math.abs(diffX) > Math.abs(diffY)) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    // Direct scroll with smooth interpolation
+                    const targetScroll = touchStartScrollLeft + diffX;
+                    container.scrollLeft = targetScroll;
+                    
+                    updateFadeIndicators();
+                }
+            }, { passive: false });
+
+            // Smooth momentum scrolling on touch end
+            container.addEventListener('touchend', (e) => {
+                if (isHorizontalScroll && Math.abs(touchVelocity) > 0.1) {
+                    // Apply momentum with physics-based deceleration
+                    let currentVelocity = touchVelocity * 0.5; // Reduce initial velocity
+                    const friction = 0.95; // Friction coefficient
+                    const minVelocity = 0.1;
+                    
+                    function applyMomentum() {
+                        if (Math.abs(currentVelocity) > minVelocity) {
+                            container.scrollLeft -= currentVelocity;
+                            currentVelocity *= friction;
+                            momentumAnimation = requestAnimationFrame(applyMomentum);
+                            updateFadeIndicators();
+                        } else {
+                            momentumAnimation = null;
+                        }
+                    }
+                    
+                    momentumAnimation = requestAnimationFrame(applyMomentum);
+                }
+                
+                touchStartX = 0;
+                touchStartY = 0;
+                touchVelocity = 0;
+                isHorizontalScroll = false;
+                updateFadeIndicators();
+            }, { passive: true });
+
+            // Smooth scroll on scroll event (for programmatic scrolling)
+            let scrollTimeout;
+            container.addEventListener('scroll', () => {
+                updateFadeIndicators();
+                
+                // Track scroll velocity
+                const now = performance.now();
+                const timeDelta = now - lastScrollTime;
+                if (timeDelta > 0) {
+                    const scrollDelta = container.scrollLeft - lastScrollLeft;
+                    scrollVelocity = scrollDelta / timeDelta;
+                }
+                lastScrollLeft = container.scrollLeft;
+                lastScrollTime = now;
+            }, { passive: true });
+
+            // Handle resize
+            let resizeTimeout;
+            const resizeObserver = new ResizeObserver(() => {
+                clearTimeout(resizeTimeout);
+                resizeTimeout = setTimeout(() => {
+                    updateFadeIndicators();
+                }, 150);
+            });
+            
+            resizeObserver.observe(container);
+        });
+
+        // Intersection Observer for fade-in animations
+        const observerOptions = {
+            threshold: [0, 0.1, 0.25],
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        // Observe category sections
+        document.querySelectorAll('.category-section').forEach(section => {
+            section.style.opacity = '0';
+            section.style.transform = 'translateY(20px)';
+            section.style.transition = 'opacity 0.6s ease-out, transform 0.6s ease-out';
+            observer.observe(section);
+        });
+
+        // Optimize images loading
+        if ('loading' in HTMLImageElement.prototype) {
+            document.querySelectorAll('.shop-card-image').forEach(img => {
+                img.loading = 'lazy';
+            });
+        }
+
+        // Preload next cards for smoother scrolling
+        const preloadCards = () => {
+            document.querySelectorAll('.shops-scroll-container').forEach(container => {
+                const cards = container.querySelectorAll('.shop-card');
+                cards.forEach((card, index) => {
+                    if (index < 3) {
+                        const img = card.querySelector('.shop-card-image');
+                        if (img && !img.complete) {
+                            img.loading = 'eager';
+                        }
+                    }
+                });
+            });
+        };
+
+        // Run after initial load
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', preloadCards);
+        } else {
+            preloadCards();
+        }
+    })();
+</script>
+{% endblock %}

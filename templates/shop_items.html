@@ -1,0 +1,1442 @@
+{% extends "shop_dashboard.html" %}
+
+{% block title %}Shop Items Management - {{ shop.name if shop else 'KWETU DELIVERIES' }}{% endblock %}
+
+{% block sidebar_nav %}
+<a href="#" class="sidebar-nav-item" id="nav-register-item" onclick="event.preventDefault(); openRegisterItemModal();">
+    <div class="nav-item-icon">
+        <i class="fas fa-plus-circle"></i>
+    </div>
+    <span class="nav-item-text">Register Shop-Item</span>
+</a>
+<a href="/dashboard/shop/items/management" class="sidebar-nav-item" id="nav-item-management">
+    <div class="nav-item-icon">
+        <i class="fas fa-list"></i>
+    </div>
+    <span class="nav-item-text">Shop-Item Management Page</span>
+</a>
+<a href="/dashboard/shop/items/analytics" class="sidebar-nav-item" id="nav-item-analytics">
+    <div class="nav-item-icon">
+        <i class="fas fa-chart-bar"></i>
+    </div>
+    <span class="nav-item-text">Shop-Item Analytics</span>
+</a>
+<a href="/dashboard/shop/items/settings" class="sidebar-nav-item" id="nav-item-settings">
+    <div class="nav-item-icon">
+        <i class="fas fa-cog"></i>
+    </div>
+    <span class="nav-item-text">Shop-Item Settings</span>
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="modern-items-page">
+    <!-- Page content cleared -->
+</div>
+
+<!-- Register Shop Item Modal -->
+<div class="modal-overlay modern-modal-overlay" id="register-item-modal">
+    <div class="modern-modal-container">
+        <div class="modern-modal-header">
+            <div class="modal-header-content">
+                <div class="modal-icon-wrapper">
+                    <i class="fas fa-plus-circle"></i>
+                </div>
+                <div class="modal-title-wrapper">
+                    <h2 class="modern-modal-title">Register Shop Item</h2>
+                    <p class="modal-subtitle">Add a new item to your shop inventory</p>
+                </div>
+            </div>
+            <button class="modern-modal-close-btn" id="close-register-item-modal" aria-label="Close modal">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modern-modal-body">
+            <form id="register-item-form" class="modern-form">
+                <div class="form-section">
+                    <div class="section-header">
+                        <i class="fas fa-tag"></i>
+                        <span>Basic Information</span>
+                    </div>
+                    <div class="form-grid">
+                        <div class="form-group modern-form-group">
+                            <label for="item-category" class="modern-form-label">
+                                <i class="fas fa-folder"></i>
+                                Items Category *
+                            </label>
+                            <div class="input-wrapper">
+                                <input type="text" id="item-category" name="category" class="modern-form-input" required style="text-transform: uppercase;" placeholder="ENTER ITEMS CATEGORY">
+                                <div class="input-focus-line"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group modern-form-group">
+                            <label for="item-name" class="modern-form-label">
+                                <i class="fas fa-box"></i>
+                                Items Name *
+                            </label>
+                            <div class="input-wrapper">
+                                <input type="text" id="item-name" name="item_name" class="modern-form-input" required style="text-transform: uppercase;" placeholder="ENTER ITEMS NAME">
+                                <div class="input-focus-line"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group modern-form-group">
+                        <label for="item-description" class="modern-form-label">
+                            <i class="fas fa-align-left"></i>
+                            Items Description *
+                        </label>
+                        <div class="input-wrapper">
+                            <textarea id="item-description" name="description" class="modern-form-input modern-textarea" rows="4" required style="text-transform: uppercase;" placeholder="ENTER ITEMS DESCRIPTION"></textarea>
+                            <div class="input-focus-line"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-section">
+                    <div class="section-header">
+                        <i class="fas fa-dollar-sign"></i>
+                        <span>Pricing Information</span>
+                    </div>
+                    <div class="form-grid">
+                        <div class="form-group modern-form-group">
+                            <label for="item-price" class="modern-form-label">
+                                <i class="fas fa-money-bill-wave"></i>
+                                Items Price *
+                            </label>
+                            <div class="input-wrapper price-input-wrapper">
+                                <span class="currency-symbol">KES</span>
+                                <input type="number" id="item-price" name="price" class="modern-form-input price-input" required step="0.01" min="0" placeholder="0.00">
+                                <div class="input-focus-line"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group modern-form-group">
+                            <label for="item-discount-price" class="modern-form-label">
+                                <i class="fas fa-percent"></i>
+                                Discounted Price (Optional)
+                            </label>
+                            <div class="input-wrapper price-input-wrapper">
+                                <span class="currency-symbol">KES</span>
+                                <input type="number" id="item-discount-price" name="discount_price" class="modern-form-input price-input" step="0.01" min="0" placeholder="0.00">
+                                <div class="input-focus-line"></div>
+                            </div>
+                            <small class="form-hint">Leave empty if item is not discounted</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-section">
+                    <div class="section-header">
+                        <i class="fas fa-image"></i>
+                        <span>Item Image</span>
+                    </div>
+                    <div class="form-group modern-form-group">
+                        <label for="item-image" class="modern-form-label">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            Items Image (Upload) *
+                        </label>
+                        <div class="modern-file-upload-wrapper">
+                            <input type="file" id="item-image" name="item_image" class="modern-file-input" accept="image/*" required>
+                            <label for="item-image" class="modern-file-upload-label">
+                                <div class="upload-icon-container">
+                                    <i class="fas fa-cloud-upload-alt"></i>
+                                </div>
+                                <div class="upload-text-container">
+                                    <span class="upload-main-text">Click to upload or drag and drop</span>
+                                    <span class="upload-sub-text">PNG, JPG, JPEG up to 5MB</span>
+                                </div>
+                            </label>
+                            <div id="item-image-preview" class="modern-image-preview"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="modern-modal-actions">
+                    <button type="button" class="modern-btn modern-btn-secondary" id="cancel-register-item-btn">
+                        <i class="fas fa-times"></i>
+                        <span>Cancel</span>
+                    </button>
+                    <button type="submit" class="modern-btn modern-btn-primary">
+                        <i class="fas fa-save"></i>
+                        <span>Register Item</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Modern Items Page Styles */
+.modern-items-page {
+    padding: 0;
+    animation: fadeIn 0.5s ease;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow-x: hidden;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Page Header */
+.modern-page-header {
+    background: var(--shop-gradient);
+    border-radius: 1.5rem;
+    padding: 2.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 8px 24px rgba(255, 107, 53, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+.modern-page-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+    border-radius: 50%;
+    transform: translate(30%, -30%);
+}
+
+.header-content-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    position: relative;
+    z-index: 1;
+}
+
+.header-icon-container {
+    width: 4.5rem;
+    height: 4.5rem;
+    border-radius: 1.25rem;
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+}
+
+.header-icon-container i {
+    font-size: 2rem;
+    color: white;
+}
+
+.header-text-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.modern-page-title {
+    font-size: 2.25rem;
+    font-weight: 900;
+    color: white;
+    margin: 0;
+    letter-spacing: -0.03em;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.modern-page-subtitle {
+    color: rgba(255, 255, 255, 0.95);
+    font-size: 1.125rem;
+    margin: 0;
+    font-weight: 500;
+}
+
+.header-actions-container {
+    position: relative;
+    z-index: 1;
+}
+
+.modern-header-btn {
+    padding: 0.875rem 1.75rem;
+    border-radius: 0.75rem;
+    border: none;
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    color: white;
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.modern-header-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+}
+
+.modern-header-btn i {
+    font-size: 1.125rem;
+}
+
+/* Stats Grid */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+.stat-card {
+    background: white;
+    border-radius: 1.25rem;
+    padding: 1.75rem;
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    border: 2px solid transparent;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--shop-gradient);
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+}
+
+.stat-card:hover::before {
+    transform: scaleX(1);
+}
+
+.stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    border-color: rgba(255, 107, 53, 0.2);
+}
+
+.stat-icon {
+    width: 3.5rem;
+    height: 3.5rem;
+    border-radius: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.stat-primary .stat-icon {
+    background: linear-gradient(135deg, rgba(255, 107, 53, 0.15) 0%, rgba(247, 147, 30, 0.15) 100%);
+    color: var(--shop-primary);
+}
+
+.stat-success .stat-icon {
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.15) 0%, rgba(16, 185, 129, 0.15) 100%);
+    color: #22c55e;
+}
+
+.stat-warning .stat-icon {
+    background: linear-gradient(135deg, rgba(251, 191, 36, 0.15) 0%, rgba(245, 158, 11, 0.15) 100%);
+    color: #fbbf24;
+}
+
+.stat-info .stat-icon {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(37, 99, 235, 0.15) 100%);
+    color: #3b82f6;
+}
+
+.stat-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.stat-value {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--shop-dark);
+    line-height: 1;
+}
+
+.stat-label {
+    font-size: 0.875rem;
+    color: #64748b;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* Action Cards Section */
+.action-cards-section {
+    margin-top: 2rem;
+}
+
+.section-title-bar {
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.section-title {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--shop-dark);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.section-title i {
+    color: var(--shop-primary);
+}
+
+.action-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+.modern-action-card {
+    background: white;
+    border-radius: 1.25rem;
+    padding: 2rem;
+    border: 2px solid #f1f5f9;
+    text-decoration: none;
+    color: var(--shop-dark);
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.modern-action-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--shop-gradient);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.modern-action-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 12px 32px rgba(255, 107, 53, 0.2);
+    border-color: var(--shop-primary);
+}
+
+.modern-action-card:hover::before {
+    opacity: 0.05;
+}
+
+.card-icon-wrapper {
+    width: 4rem;
+    height: 4rem;
+    border-radius: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.75rem;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 1;
+    transition: transform 0.3s ease;
+}
+
+.modern-action-card:hover .card-icon-wrapper {
+    transform: scale(1.1) rotate(5deg);
+}
+
+.card-register .card-icon-wrapper {
+    background: linear-gradient(135deg, rgba(255, 107, 53, 0.15) 0%, rgba(247, 147, 30, 0.15) 100%);
+    color: var(--shop-primary);
+}
+
+.card-management .card-icon-wrapper {
+    background: linear-gradient(135deg, rgba(0, 78, 137, 0.15) 0%, rgba(26, 107, 163, 0.15) 100%);
+    color: #004E89;
+}
+
+.card-analytics .card-icon-wrapper {
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.15) 0%, rgba(16, 185, 129, 0.15) 100%);
+    color: #22c55e;
+}
+
+.card-settings .card-icon-wrapper {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, rgba(124, 58, 237, 0.15) 100%);
+    color: #8b5cf6;
+}
+
+.card-content {
+    flex: 1;
+    position: relative;
+    z-index: 1;
+}
+
+.card-title {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: var(--shop-dark);
+    margin: 0 0 0.5rem 0;
+    transition: color 0.3s ease;
+}
+
+.modern-action-card:hover .card-title {
+    color: var(--shop-primary);
+}
+
+.card-description {
+    font-size: 0.875rem;
+    color: #64748b;
+    margin: 0;
+    line-height: 1.5;
+}
+
+.card-arrow {
+    position: relative;
+    z-index: 1;
+    color: #94a3b8;
+    font-size: 1.25rem;
+    transition: all 0.3s ease;
+}
+
+.modern-action-card:hover .card-arrow {
+    color: var(--shop-primary);
+    transform: translateX(4px);
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .shop-main {
+        margin-left: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 1.5rem;
+    }
+    
+    .modern-page-header {
+        padding: 2rem;
+        border-radius: 1rem;
+    }
+    
+    .modern-page-title {
+        font-size: 1.875rem;
+    }
+    
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+    
+    .action-cards-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+    
+    .modern-action-card {
+        padding: 1.5rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .shop-main {
+        margin-left: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 1rem;
+        padding-bottom: calc(1rem + 50px);
+    }
+    
+    .content-area {
+        width: 100%;
+        max-width: 100%;
+        padding: 0;
+    }
+    
+    .modern-items-page {
+        width: 100%;
+        max-width: 100%;
+        padding: 0;
+    }
+    
+    .modern-page-header {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 1.5rem;
+        border-radius: 1rem;
+        width: 100%;
+        max-width: 100%;
+        margin-bottom: 1.5rem;
+    }
+    
+    .header-content-wrapper {
+        width: 100%;
+    }
+    
+    .header-actions-container {
+        width: 100%;
+    }
+    
+    .modern-header-btn {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .modern-page-title {
+        font-size: 1.5rem;
+    }
+    
+    .modern-page-subtitle {
+        font-size: 0.875rem;
+    }
+    
+    .stats-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .stat-card {
+        padding: 1.25rem;
+    }
+    
+    .action-cards-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .modern-action-card {
+        padding: 1.25rem;
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .card-arrow {
+        display: none;
+    }
+}
+
+@media (max-width: 480px) {
+    .shop-main {
+        padding: 0.75rem;
+        padding-bottom: calc(0.75rem + 50px);
+    }
+    
+    .modern-items-page {
+        padding: 0;
+    }
+    
+    .modern-page-header {
+        padding: 1.25rem;
+        border-radius: 0.75rem;
+        margin-bottom: 1rem;
+    }
+    
+    .header-icon-container {
+        width: 3rem;
+        height: 3rem;
+    }
+    
+    .header-icon-container i {
+        font-size: 1.25rem;
+    }
+    
+    .modern-page-title {
+        font-size: 1.25rem;
+    }
+    
+    .modern-page-subtitle {
+        font-size: 0.75rem;
+    }
+    
+    .stats-grid {
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+    }
+    
+    .stat-card {
+        padding: 1rem;
+        gap: 1rem;
+    }
+    
+    .stat-icon {
+        width: 3rem;
+        height: 3rem;
+        font-size: 1.25rem;
+    }
+    
+    .stat-value {
+        font-size: 1.5rem;
+    }
+    
+    .stat-label {
+        font-size: 0.75rem;
+    }
+    
+    .action-cards-section {
+        margin-top: 1rem;
+    }
+    
+    .section-title {
+        font-size: 1.25rem;
+        margin-bottom: 1rem;
+    }
+    
+    .action-cards-grid {
+        gap: 0.75rem;
+    }
+    
+    .modern-action-card {
+        padding: 1rem;
+        gap: 0.75rem;
+    }
+    
+    .card-icon-wrapper {
+        width: 3rem;
+        height: 3rem;
+        font-size: 1.25rem;
+    }
+    
+    .card-title {
+        font-size: 1rem;
+    }
+    
+    .card-description {
+        font-size: 0.75rem;
+    }
+}
+
+.form-textarea {
+    resize: vertical;
+    min-height: 100px;
+    font-family: inherit;
+}
+
+/* Modern Modal Styles */
+.modern-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(15, 23, 42, 0.75);
+    backdrop-filter: blur(8px);
+    z-index: 10000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    opacity: 0;
+    transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.modern-modal-overlay.active {
+    display: flex;
+    opacity: 1;
+}
+
+.modern-modal-container {
+    background: white;
+    border-radius: 1.5rem;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    width: 100%;
+    max-width: 600px;
+    max-height: 90vh;
+    overflow: hidden;
+    transform: scale(0.9) translateY(20px);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    flex-direction: column;
+}
+
+.modern-modal-overlay.active .modern-modal-container {
+    transform: scale(1) translateY(0);
+}
+
+.modern-modal-header {
+    background: var(--shop-gradient);
+    padding: 1rem 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+    overflow: hidden;
+}
+
+.modern-modal-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, transparent 100%);
+    pointer-events: none;
+}
+
+.modal-header-content {
+    display: flex;
+    align-items: center;
+    gap: 0.875rem;
+    position: relative;
+    z-index: 1;
+}
+
+.modal-icon-wrapper {
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: 0.75rem;
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+.modal-icon-wrapper i {
+    font-size: 1.5rem;
+    color: white;
+}
+
+.modal-title-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.modern-modal-title {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: white;
+    margin: 0;
+    letter-spacing: -0.025em;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.modal-subtitle {
+    font-size: 0.8125rem;
+    color: rgba(255, 255, 255, 0.9);
+    margin: 0;
+    font-weight: 500;
+}
+
+.modern-modal-close-btn {
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 0.625rem;
+    border: none;
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    z-index: 1;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.modern-modal-close-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: rotate(90deg) scale(1.1);
+}
+
+.modern-modal-close-btn i {
+    font-size: 1rem;
+}
+
+.modern-modal-body {
+    padding: 1rem 1.25rem;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.modern-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.form-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1rem;
+    background: linear-gradient(135deg, #fafbfc 0%, #f8fafc 100%);
+    border-radius: 0.75rem;
+    border: 1px solid #e5e7eb;
+}
+
+.section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9375rem;
+    font-weight: 700;
+    color: var(--shop-dark);
+    margin-bottom: 0.25rem;
+}
+
+.section-header i {
+    color: var(--shop-primary);
+    font-size: 1rem;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+}
+
+.modern-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+}
+
+.modern-form-label {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-size: 0.8125rem;
+    font-weight: 700;
+    color: var(--shop-dark);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.modern-form-label i {
+    color: var(--shop-primary);
+    font-size: 1rem;
+}
+
+.input-wrapper {
+    position: relative;
+}
+
+.modern-form-input {
+    width: 100%;
+    padding: 0.625rem 0.875rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 0.625rem;
+    font-size: 0.9375rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background: white;
+    font-weight: 500;
+    box-sizing: border-box;
+    color: var(--shop-dark);
+}
+
+.modern-form-input:focus {
+    outline: none;
+    border-color: var(--shop-primary);
+    background: white;
+    box-shadow: 0 0 0 4px rgba(255, 107, 53, 0.1);
+}
+
+.modern-form-input::placeholder {
+    color: #94a3b8;
+    font-weight: 400;
+}
+
+.input-focus-line {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--shop-gradient);
+    transform: scaleX(0);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.modern-form-input:focus ~ .input-focus-line {
+    transform: scaleX(1);
+}
+
+.modern-textarea {
+    resize: vertical;
+    min-height: 80px;
+    font-family: inherit;
+    line-height: 1.5;
+}
+
+.price-input-wrapper {
+    display: flex;
+    align-items: center;
+    position: relative;
+}
+
+.currency-symbol {
+    position: absolute;
+    left: 1rem;
+    font-weight: 700;
+    color: var(--shop-primary);
+    z-index: 1;
+    font-size: 0.875rem;
+}
+
+.price-input {
+    padding-left: 3.5rem !important;
+}
+
+.form-hint {
+    font-size: 0.6875rem;
+    color: #94a3b8;
+    margin-top: 0.125rem;
+    font-style: italic;
+}
+
+.modern-file-upload-wrapper {
+    position: relative;
+}
+
+.modern-file-input {
+    position: absolute;
+    width: 0.1px;
+    height: 0.1px;
+    opacity: 0;
+    overflow: hidden;
+    z-index: -1;
+}
+
+.modern-file-upload-label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem 1.25rem;
+    border: 3px dashed #e5e7eb;
+    border-radius: 0.75rem;
+    background: white;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    text-align: center;
+    gap: 0.5rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.modern-file-upload-label::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 107, 53, 0.1), transparent);
+    transition: left 0.5s;
+}
+
+.modern-file-upload-label:hover::before {
+    left: 100%;
+}
+
+.modern-file-upload-label:hover {
+    border-color: var(--shop-primary);
+    background: linear-gradient(135deg, rgba(255, 107, 53, 0.05) 0%, rgba(247, 147, 30, 0.05) 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(255, 107, 53, 0.15);
+}
+
+.upload-icon-container {
+    width: 3rem;
+    height: 3rem;
+    border-radius: 50%;
+    background: var(--shop-gradient);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+}
+
+.upload-icon-container i {
+    font-size: 1.5rem;
+    color: white;
+}
+
+.upload-text-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.upload-main-text {
+    font-weight: 700;
+    color: var(--shop-dark);
+    font-size: 1rem;
+}
+
+.upload-sub-text {
+    font-size: 0.875rem;
+    color: #64748b;
+}
+
+.modern-file-input:focus + .modern-file-upload-label {
+    border-color: var(--shop-primary);
+    box-shadow: 0 0 0 4px rgba(255, 107, 53, 0.1);
+}
+
+.modern-image-preview {
+    margin-top: 1rem;
+    display: none;
+    animation: fadeIn 0.3s ease;
+}
+
+.modern-image-preview.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.modern-image-preview img {
+    width: 100%;
+    max-width: 400px;
+    height: auto;
+    border-radius: 1rem;
+    border: 3px solid var(--shop-primary);
+    box-shadow: 0 8px 24px rgba(255, 107, 53, 0.2);
+    margin: 0 auto;
+    display: block;
+}
+
+.modern-modal-actions {
+    display: flex;
+    gap: 0.625rem;
+    justify-content: flex-end;
+    padding-top: 0.75rem;
+    border-top: 2px solid #f1f5f9;
+    margin-top: 0.25rem;
+}
+
+.modern-btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.625rem;
+    font-weight: 700;
+    font-size: 0.9375rem;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.625rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.modern-btn-primary {
+    background: var(--shop-gradient);
+    color: white;
+    box-shadow: 0 4px 16px rgba(255, 107, 53, 0.3);
+}
+
+.modern-btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(255, 107, 53, 0.4);
+}
+
+.modern-btn-primary:active {
+    transform: translateY(0);
+}
+
+.modern-btn-secondary {
+    background: white;
+    color: var(--shop-dark);
+    border: 2px solid #e5e7eb;
+}
+
+.modern-btn-secondary:hover {
+    background: #f8fafc;
+    border-color: var(--shop-primary);
+    color: var(--shop-primary);
+    transform: translateY(-2px);
+}
+
+.modern-btn i {
+    font-size: 1rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .modern-modal-container {
+        max-width: 100%;
+        max-height: 100vh;
+        border-radius: 0;
+        margin: 0;
+    }
+    
+    .modern-modal-header {
+        padding: 1.5rem;
+    }
+    
+    .modal-header-content {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    
+    .modern-modal-title {
+        font-size: 1.5rem;
+    }
+    
+    .modern-modal-body {
+        padding: 1.5rem;
+    }
+    
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .form-section {
+        padding: 1.25rem;
+    }
+    
+    .modern-modal-actions {
+        flex-direction: column-reverse;
+    }
+    
+    .modern-btn {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .modern-file-upload-label {
+        padding: 2rem 1.5rem;
+    }
+    
+    .upload-icon-container {
+        width: 3.5rem;
+        height: 3.5rem;
+    }
+    
+    .upload-icon-container i {
+        font-size: 1.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .modern-modal-overlay {
+        padding: 0;
+    }
+    
+    .modern-modal-header {
+        padding: 1.25rem;
+    }
+    
+    .modern-modal-body {
+        padding: 1.25rem;
+    }
+    
+    .form-section {
+        padding: 1rem;
+    }
+    
+    .modern-form {
+        gap: 1.5rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .action-buttons-group {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Register Item Modal
+    const registerItemModal = document.getElementById('register-item-modal');
+    const closeRegisterItemModal = document.getElementById('close-register-item-modal');
+    const cancelRegisterItemBtn = document.getElementById('cancel-register-item-btn');
+    const registerItemForm = document.getElementById('register-item-form');
+
+    // Open modal
+    window.openRegisterItemModal = function() {
+        registerItemModal.classList.add('active');
+    };
+
+    // Close modal
+    function closeRegisterItemModalFunc() {
+        registerItemModal.classList.remove('active');
+        if (registerItemForm) registerItemForm.reset();
+    }
+
+    if (closeRegisterItemModal) {
+        closeRegisterItemModal.addEventListener('click', closeRegisterItemModalFunc);
+    }
+    if (cancelRegisterItemBtn) {
+        cancelRegisterItemBtn.addEventListener('click', closeRegisterItemModalFunc);
+    }
+
+    // Close modal on overlay click
+    if (registerItemModal) {
+        registerItemModal.addEventListener('click', function(e) {
+            if (e.target === registerItemModal) {
+                closeRegisterItemModalFunc();
+            }
+        });
+    }
+
+    // Form submission
+    if (registerItemForm) {
+        registerItemForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(registerItemForm);
+            
+            const submitBtn = registerItemForm.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>Registering...</span>';
+
+            fetch('/api/shop/items/register', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+                
+                if (data.success) {
+                    alert('Item registered successfully!');
+                    closeRegisterItemModalFunc();
+                    // Optionally reload or update the page
+                } else {
+                    alert('Error: ' + (data.message || 'Failed to register item'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+                alert('Error registering item');
+            });
+        });
+    }
+
+    // Make all text inputs uppercase
+    document.querySelectorAll('#register-item-form input[type="text"], #register-item-form textarea').forEach(input => {
+        input.addEventListener('input', function() {
+            this.value = this.value.toUpperCase();
+        });
+    });
+
+    // Handle file upload preview
+    const itemImageInput = document.getElementById('item-image');
+    const imagePreview = document.getElementById('item-image-preview');
+    const fileUploadLabel = document.querySelector('.modern-file-upload-label');
+    
+    if (itemImageInput && imagePreview) {
+        itemImageInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                if (file.size > 5 * 1024 * 1024) { // 5MB limit
+                    alert('Image size must be less than 5MB');
+                    this.value = '';
+                    imagePreview.classList.remove('active');
+                    imagePreview.innerHTML = '';
+                    if (fileUploadLabel) {
+                        fileUploadLabel.style.display = 'flex';
+                    }
+                    return;
+                }
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    imagePreview.innerHTML = `
+                        <div style="position: relative; display: inline-block;">
+                            <img src="${e.target.result}" alt="Item preview">
+                            <button type="button" onclick="removeImagePreview()" style="position: absolute; top: 0.5rem; right: 0.5rem; background: #dc2626; color: white; border: none; border-radius: 50%; width: 2rem; height: 2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.2);">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    `;
+                    imagePreview.classList.add('active');
+                    if (fileUploadLabel) {
+                        fileUploadLabel.style.display = 'none';
+                    }
+                };
+                reader.readAsDataURL(file);
+            } else {
+                imagePreview.classList.remove('active');
+                imagePreview.innerHTML = '';
+                if (fileUploadLabel) {
+                    fileUploadLabel.style.display = 'flex';
+                }
+            }
+        });
+    }
+
+    // Remove image preview function
+    window.removeImagePreview = function() {
+        if (itemImageInput) itemImageInput.value = '';
+        if (imagePreview) {
+            imagePreview.classList.remove('active');
+            imagePreview.innerHTML = '';
+        }
+        if (fileUploadLabel) {
+            fileUploadLabel.style.display = 'flex';
+        }
+    };
+});
+</script>
+{% endblock %}
+

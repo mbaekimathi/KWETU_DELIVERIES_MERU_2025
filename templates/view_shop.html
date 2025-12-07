@@ -1,0 +1,212 @@
+{% extends "base_dashboard.html" %}
+
+{% block title %}View Shop - KWETU DELIVERIES{% endblock %}
+
+{% block breadcrumb %}{% endblock %}
+
+{% block sidebar_nav %}{% endblock %}
+
+{% block content %}
+<div class="simple-shop-view">
+    {% if error %}
+    <div class="error-container">
+        <div class="alert alert-error">
+            <i class="fas fa-exclamation-circle"></i>
+            <span>{{ error }}</span>
+        </div>
+        <a href="/dashboard/admin/shop-management" class="back-link-btn">
+            <i class="fas fa-arrow-left"></i>
+            <span>Back to Shop Management</span>
+        </a>
+    </div>
+    {% elif shop %}
+    <div class="shop-simple-view">
+        <div class="shop-image-container">
+            {% if shop.profile_image %}
+                {% set profile_img = shop.profile_image %}
+                {% if profile_img.startswith('uploads/') %}
+                    {% set profile_img_path = profile_img %}
+                {% elif profile_img.startswith('profiles/') %}
+                    {% set profile_img_path = 'uploads/' + profile_img %}
+                {% else %}
+                    {% set profile_img_path = 'uploads/profiles/' + profile_img %}
+                {% endif %}
+                <img src="{{ url_for('static', filename=profile_img_path) }}" alt="{{ shop.name }}" class="shop-image" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <div class="shop-image-placeholder" style="display: none;">
+                    <i class="fas fa-store"></i>
+                </div>
+            {% else %}
+                <div class="shop-image-placeholder">
+                    <i class="fas fa-store"></i>
+                </div>
+            {% endif %}
+        </div>
+        <div class="shop-name-container">
+            <h1 class="shop-name-simple">{{ shop.name }}</h1>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+/* Hide all sidebar navigation links */
+.dashboard-sidebar .sidebar-nav {
+    display: none !important;
+}
+
+.simple-shop-view {
+    min-height: calc(100vh - var(--header-height) - var(--footer-height));
+    padding: 2rem;
+    position: relative;
+}
+
+.error-container {
+    text-align: center;
+    max-width: 500px;
+    width: 100%;
+    margin: 0 auto;
+}
+
+.alert {
+    padding: 1rem 1.25rem;
+    border-radius: var(--radius-lg);
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+}
+
+.alert-error {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #991b1b;
+}
+
+.back-link-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--radius-lg);
+    background: #f1f5f9;
+    color: #475569;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all var(--transition-base);
+}
+
+.back-link-btn:hover {
+    background: #e2e8f0;
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
+}
+
+.shop-simple-view {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: flex-end;
+    gap: 1.5rem;
+    position: absolute;
+    top: 2rem;
+    right: 2rem;
+    text-align: right;
+}
+
+.shop-image-container {
+    width: 8rem;
+    height: 8rem;
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+    background: #f1f5f9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--shadow-lg);
+    border: 3px solid var(--role-primary, #004E89);
+    flex-shrink: 0;
+}
+
+.shop-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.shop-image-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #94a3b8;
+    font-size: 2.5rem;
+    background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+}
+
+.shop-name-container {
+    display: flex;
+    align-items: center;
+    height: 8rem;
+}
+
+.shop-name-simple {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #0f172a;
+    margin: 0;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+}
+
+@media (max-width: 768px) {
+    .shop-simple-view {
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 1rem;
+        top: 1rem;
+        right: 1rem;
+    }
+    
+    .shop-image-container {
+        width: 6rem;
+        height: 6rem;
+    }
+    
+    .shop-image-placeholder {
+        font-size: 2rem;
+    }
+    
+    .shop-name-container {
+        height: auto;
+    }
+    
+    .shop-name-simple {
+        font-size: 1.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .shop-simple-view {
+        top: 0.5rem;
+        right: 0.5rem;
+        gap: 0.75rem;
+    }
+    
+    .shop-image-container {
+        width: 5rem;
+        height: 5rem;
+    }
+    
+    .shop-image-placeholder {
+        font-size: 1.5rem;
+    }
+    
+    .shop-name-simple {
+        font-size: 1.25rem;
+    }
+}
+</style>
+{% endblock %}
+

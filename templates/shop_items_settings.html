@@ -1,0 +1,940 @@
+{% extends "shop_dashboard.html" %}
+
+{% block title %}Shop Items Settings - {{ shop.name if shop else 'KWETU DELIVERIES' }}{% endblock %}
+
+{% block sidebar_nav %}
+<a href="#" class="sidebar-nav-item" id="nav-register-item" onclick="event.preventDefault(); window.location.href='/dashboard/shop/items';">
+    <div class="nav-item-icon">
+        <i class="fas fa-plus-circle"></i>
+    </div>
+    <span class="nav-item-text">Register Shop-Item</span>
+</a>
+<a href="/dashboard/shop/items/management" class="sidebar-nav-item" id="nav-item-management">
+    <div class="nav-item-icon">
+        <i class="fas fa-list"></i>
+    </div>
+    <span class="nav-item-text">Shop-Item Management Page</span>
+</a>
+<a href="/dashboard/shop/items/analytics" class="sidebar-nav-item" id="nav-item-analytics">
+    <div class="nav-item-icon">
+        <i class="fas fa-chart-bar"></i>
+    </div>
+    <span class="nav-item-text">Shop-Item Analytics</span>
+</a>
+<a href="/dashboard/shop/items/settings" class="sidebar-nav-item active" id="nav-item-settings">
+    <div class="nav-item-icon">
+        <i class="fas fa-cog"></i>
+    </div>
+    <span class="nav-item-text">Shop-Item Settings</span>
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="settings-page">
+    <!-- Page Header -->
+    <div class="settings-header">
+        <div class="header-content">
+            <div class="header-icon">
+                <i class="fas fa-cog"></i>
+            </div>
+            <div class="header-text">
+                <h1 class="page-title">Shop Items Settings</h1>
+                <p class="page-subtitle">Configure your shop items preferences and settings</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Navigation Sidebar -->
+    <div class="settings-layout">
+        <aside class="settings-sidebar">
+            <nav class="settings-nav">
+                <a href="#order-settings" class="settings-nav-item active" data-section="order-settings">
+                    <div class="nav-icon">
+                        <i class="fas fa-shopping-cart"></i>
+                    </div>
+                    <span class="nav-text">Order Settings</span>
+                </a>
+                <a href="#notification-settings" class="settings-nav-item" data-section="notification-settings">
+                    <div class="nav-icon">
+                        <i class="fas fa-bell"></i>
+                    </div>
+                    <span class="nav-text">Notification Settings</span>
+                </a>
+                <a href="#item-settings" class="settings-nav-item" data-section="item-settings">
+                    <div class="nav-icon">
+                        <i class="fas fa-box"></i>
+                    </div>
+                    <span class="nav-text">Item Settings</span>
+                </a>
+                <a href="#delivery-settings" class="settings-nav-item" data-section="delivery-settings">
+                    <div class="nav-icon">
+                        <i class="fas fa-truck"></i>
+                    </div>
+                    <span class="nav-text">Delivery Settings</span>
+                </a>
+                <a href="#shop-settings" class="settings-nav-item" data-section="shop-settings">
+                    <div class="nav-icon">
+                        <i class="fas fa-store"></i>
+                    </div>
+                    <span class="nav-text">Shop Settings</span>
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Settings Content -->
+        <div class="settings-content">
+            <!-- Order Settings Section -->
+            <div class="settings-section active" id="order-settings">
+                <div class="section-header">
+                    <div class="section-icon">
+                        <i class="fas fa-shopping-cart"></i>
+                    </div>
+                    <div class="section-title-group">
+                        <h2 class="section-title">Order Settings</h2>
+                        <p class="section-description">Manage order processing and fulfillment preferences</p>
+                    </div>
+                </div>
+                <div class="settings-form">
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-clock"></i>
+                            Auto-Confirm Orders
+                        </label>
+                        <div class="toggle-switch">
+                            <input type="checkbox" id="auto-confirm-orders" class="toggle-input">
+                            <label for="auto-confirm-orders" class="toggle-label">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <small class="form-hint">Automatically confirm orders when received</small>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-hourglass-half"></i>
+                            Order Processing Time (Minutes)
+                        </label>
+                        <input type="number" class="form-input" placeholder="30" min="0" value="30">
+                        <small class="form-hint">Average time to process an order</small>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-ban"></i>
+                            Minimum Order Amount (KES)
+                        </label>
+                        <input type="number" class="form-input" placeholder="0.00" min="0" step="0.01" value="0.00">
+                        <small class="form-hint">Minimum order value required</small>
+                    </div>
+                    <div class="form-actions">
+                        <button class="btn-save">
+                            <i class="fas fa-save"></i>
+                            <span>Save Order Settings</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notification Settings Section -->
+            <div class="settings-section" id="notification-settings">
+                <div class="section-header">
+                    <div class="section-icon">
+                        <i class="fas fa-bell"></i>
+                    </div>
+                    <div class="section-title-group">
+                        <h2 class="section-title">Notification Settings</h2>
+                        <p class="section-description">Configure how you receive notifications</p>
+                    </div>
+                </div>
+                <div class="settings-form">
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-envelope"></i>
+                            Email Notifications
+                        </label>
+                        <div class="toggle-switch">
+                            <input type="checkbox" id="email-notifications" class="toggle-input" checked>
+                            <label for="email-notifications" class="toggle-label">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <small class="form-hint">Receive notifications via email</small>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-sms"></i>
+                            SMS Notifications
+                        </label>
+                        <div class="toggle-switch">
+                            <input type="checkbox" id="sms-notifications" class="toggle-input">
+                            <label for="sms-notifications" class="toggle-label">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <small class="form-hint">Receive notifications via SMS</small>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-shopping-bag"></i>
+                            New Order Notifications
+                        </label>
+                        <div class="toggle-switch">
+                            <input type="checkbox" id="new-order-notifications" class="toggle-input" checked>
+                            <label for="new-order-notifications" class="toggle-label">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <small class="form-hint">Get notified when a new order is placed</small>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-exclamation-circle"></i>
+                            Low Stock Alerts
+                        </label>
+                        <div class="toggle-switch">
+                            <input type="checkbox" id="low-stock-alerts" class="toggle-input" checked>
+                            <label for="low-stock-alerts" class="toggle-label">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <small class="form-hint">Get notified when item stock is low</small>
+                    </div>
+                    <div class="form-actions">
+                        <button class="btn-save">
+                            <i class="fas fa-save"></i>
+                            <span>Save Notification Settings</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Item Settings Section -->
+            <div class="settings-section" id="item-settings">
+                <div class="section-header">
+                    <div class="section-icon">
+                        <i class="fas fa-box"></i>
+                    </div>
+                    <div class="section-title-group">
+                        <h2 class="section-title">Item Settings</h2>
+                        <p class="section-description">Manage item display and inventory preferences</p>
+                    </div>
+                </div>
+                <div class="settings-form">
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-eye"></i>
+                            Default Item Status
+                        </label>
+                        <select class="form-input">
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                            <option value="out_of_stock">Out of Stock</option>
+                        </select>
+                        <small class="form-hint">Default status for newly registered items</small>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-sort"></i>
+                            Default Sort Order
+                        </label>
+                        <select class="form-input">
+                            <option value="newest">Newest First</option>
+                            <option value="oldest">Oldest First</option>
+                            <option value="name_asc">Name (A-Z)</option>
+                            <option value="name_desc">Name (Z-A)</option>
+                            <option value="price_low">Price (Low to High)</option>
+                            <option value="price_high">Price (High to Low)</option>
+                        </select>
+                        <small class="form-hint">How items are sorted by default</small>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-layer-group"></i>
+                            Items Per Page
+                        </label>
+                        <input type="number" class="form-input" placeholder="20" min="10" max="100" value="20">
+                        <small class="form-hint">Number of items displayed per page</small>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-tag"></i>
+                            Auto-Apply Discounts
+                        </label>
+                        <div class="toggle-switch">
+                            <input type="checkbox" id="auto-apply-discounts" class="toggle-input">
+                            <label for="auto-apply-discounts" class="toggle-label">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <small class="form-hint">Automatically apply discount prices when available</small>
+                    </div>
+                    <div class="form-actions">
+                        <button class="btn-save">
+                            <i class="fas fa-save"></i>
+                            <span>Save Item Settings</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Delivery Settings Section -->
+            <div class="settings-section" id="delivery-settings">
+                <div class="section-header">
+                    <div class="section-icon">
+                        <i class="fas fa-truck"></i>
+                    </div>
+                    <div class="section-title-group">
+                        <h2 class="section-title">Delivery Settings</h2>
+                        <p class="section-description">Configure delivery options and preferences</p>
+                    </div>
+                </div>
+                <div class="settings-form">
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-truck"></i>
+                            Enable Delivery Service
+                        </label>
+                        <div class="toggle-switch">
+                            <input type="checkbox" id="enable-delivery" class="toggle-input" checked>
+                            <label for="enable-delivery" class="toggle-label">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <small class="form-hint">Allow customers to request delivery</small>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-dollar-sign"></i>
+                            Delivery Fee (KES)
+                        </label>
+                        <input type="number" class="form-input" placeholder="0.00" min="0" step="0.01" value="0.00">
+                        <small class="form-hint">Standard delivery charge</small>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-map-marker-alt"></i>
+                            Maximum Delivery Distance (KM)
+                        </label>
+                        <input type="number" class="form-input" placeholder="10" min="0" step="0.1" value="10">
+                        <small class="form-hint">Maximum distance for delivery service</small>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-clock"></i>
+                            Estimated Delivery Time (Minutes)
+                        </label>
+                        <input type="number" class="form-input" placeholder="45" min="0" value="45">
+                        <small class="form-hint">Average delivery time</small>
+                    </div>
+                    <div class="form-actions">
+                        <button class="btn-save">
+                            <i class="fas fa-save"></i>
+                            <span>Save Delivery Settings</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Shop Settings Section -->
+            <div class="settings-section" id="shop-settings">
+                <div class="section-header">
+                    <div class="section-icon">
+                        <i class="fas fa-store"></i>
+                    </div>
+                    <div class="section-title-group">
+                        <h2 class="section-title">Shop Settings</h2>
+                        <p class="section-description">Manage general shop preferences</p>
+                    </div>
+                </div>
+                <div class="settings-form">
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-globe"></i>
+                            Shop Visibility
+                        </label>
+                        <div class="toggle-switch">
+                            <input type="checkbox" id="shop-visibility" class="toggle-input" checked>
+                            <label for="shop-visibility" class="toggle-label">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <small class="form-hint">Make your shop visible to customers</small>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-clock"></i>
+                            Operating Hours
+                        </label>
+                        <div class="time-inputs">
+                            <input type="time" class="form-input" value="08:00">
+                            <span class="time-separator">to</span>
+                            <input type="time" class="form-input" value="20:00">
+                        </div>
+                        <small class="form-hint">Shop operating hours</small>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-calendar"></i>
+                            Days of Operation
+                        </label>
+                        <div class="days-selector">
+                            <label class="day-checkbox">
+                                <input type="checkbox" checked>
+                                <span>Mon</span>
+                            </label>
+                            <label class="day-checkbox">
+                                <input type="checkbox" checked>
+                                <span>Tue</span>
+                            </label>
+                            <label class="day-checkbox">
+                                <input type="checkbox" checked>
+                                <span>Wed</span>
+                            </label>
+                            <label class="day-checkbox">
+                                <input type="checkbox" checked>
+                                <span>Thu</span>
+                            </label>
+                            <label class="day-checkbox">
+                                <input type="checkbox" checked>
+                                <span>Fri</span>
+                            </label>
+                            <label class="day-checkbox">
+                                <input type="checkbox" checked>
+                                <span>Sat</span>
+                            </label>
+                            <label class="day-checkbox">
+                                <input type="checkbox">
+                                <span>Sun</span>
+                            </label>
+                        </div>
+                        <small class="form-hint">Select days when your shop is open</small>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-language"></i>
+                            Currency Display
+                        </label>
+                        <select class="form-input">
+                            <option value="KES" selected>KES (Kenyan Shilling)</option>
+                            <option value="USD">USD (US Dollar)</option>
+                            <option value="EUR">EUR (Euro)</option>
+                        </select>
+                        <small class="form-hint">Currency format for prices</small>
+                    </div>
+                    <div class="form-actions">
+                        <button class="btn-save">
+                            <i class="fas fa-save"></i>
+                            <span>Save Shop Settings</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.settings-page {
+    padding: 0;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Page Header */
+.settings-header {
+    background: var(--shop-gradient);
+    border-radius: 1rem;
+    padding: 1.5rem 2rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 4px 16px rgba(255, 107, 53, 0.15);
+}
+
+.header-content {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+}
+
+.header-icon {
+    width: 3rem;
+    height: 3rem;
+    border-radius: 0.75rem;
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.header-icon i {
+    font-size: 1.5rem;
+    color: white;
+}
+
+.header-text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+}
+
+.page-title {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: white;
+    margin: 0;
+    letter-spacing: -0.02em;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.page-subtitle {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 0.875rem;
+    margin: 0;
+    font-weight: 500;
+}
+
+/* Settings Layout */
+.settings-layout {
+    display: grid;
+    grid-template-columns: 250px 1fr;
+    gap: 1.5rem;
+    align-items: start;
+}
+
+/* Settings Sidebar */
+.settings-sidebar {
+    background: white;
+    border-radius: 1rem;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    padding: 1rem;
+    position: sticky;
+    top: 100px;
+}
+
+.settings-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.settings-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 0.875rem;
+    padding: 0.875rem 1rem;
+    border-radius: 0.75rem;
+    text-decoration: none;
+    color: var(--shop-dark);
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.settings-nav-item:hover {
+    background: rgba(255, 107, 53, 0.05);
+    border-color: rgba(255, 107, 53, 0.2);
+    color: var(--shop-primary);
+    transform: translateX(4px);
+}
+
+.settings-nav-item.active {
+    background: linear-gradient(90deg, rgba(255, 107, 53, 0.15) 0%, rgba(255, 107, 53, 0.05) 100%);
+    border-color: var(--shop-primary);
+    color: var(--shop-primary);
+    font-weight: 700;
+}
+
+.nav-icon {
+    width: 2rem;
+    height: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.125rem;
+}
+
+.nav-text {
+    flex: 1;
+    font-size: 0.9375rem;
+    font-weight: 600;
+}
+
+/* Settings Content */
+.settings-content {
+    background: white;
+    border-radius: 1rem;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    padding: 2rem;
+    min-height: 500px;
+}
+
+.settings-section {
+    display: none;
+}
+
+.settings-section.active {
+    display: block;
+    animation: fadeIn 0.3s ease;
+}
+
+.section-header {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 2px solid #f1f5f9;
+}
+
+.section-icon {
+    width: 3.5rem;
+    height: 3.5rem;
+    border-radius: 1rem;
+    background: var(--shop-gradient);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+}
+
+.section-icon i {
+    font-size: 1.75rem;
+    color: white;
+}
+
+.section-title-group {
+    flex: 1;
+}
+
+.section-title {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: var(--shop-dark);
+    margin: 0 0 0.5rem 0;
+}
+
+.section-description {
+    font-size: 0.9375rem;
+    color: #64748b;
+    margin: 0;
+}
+
+/* Settings Form */
+.settings-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.form-label {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    font-size: 0.9375rem;
+    font-weight: 700;
+    color: var(--shop-dark);
+}
+
+.form-label i {
+    color: var(--shop-primary);
+    font-size: 1rem;
+}
+
+.form-input {
+    padding: 0.875rem 1rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 0.625rem;
+    font-size: 0.9375rem;
+    transition: all 0.3s ease;
+    background: white;
+    color: var(--shop-dark);
+    font-weight: 500;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: var(--shop-primary);
+    box-shadow: 0 0 0 4px rgba(255, 107, 53, 0.1);
+}
+
+.form-hint {
+    font-size: 0.8125rem;
+    color: #94a3b8;
+    font-style: italic;
+}
+
+/* Toggle Switch */
+.toggle-switch {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.toggle-input {
+    display: none;
+}
+
+.toggle-label {
+    position: relative;
+    display: inline-block;
+    width: 3.5rem;
+    height: 1.875rem;
+    cursor: pointer;
+}
+
+.toggle-slider {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: #cbd5e1;
+    border-radius: 1.875rem;
+    transition: all 0.3s ease;
+}
+
+.toggle-slider::before {
+    content: '';
+    position: absolute;
+    height: 1.5rem;
+    width: 1.5rem;
+    left: 0.1875rem;
+    bottom: 0.1875rem;
+    background: white;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.toggle-input:checked + .toggle-label .toggle-slider {
+    background: var(--shop-primary);
+}
+
+.toggle-input:checked + .toggle-label .toggle-slider::before {
+    transform: translateX(1.625rem);
+}
+
+/* Time Inputs */
+.time-inputs {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.time-separator {
+    color: #64748b;
+    font-weight: 600;
+}
+
+/* Days Selector */
+.days-selector {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.day-checkbox {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.day-checkbox input[type="checkbox"] {
+    display: none;
+}
+
+.day-checkbox span {
+    padding: 0.625rem 1.25rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--shop-dark);
+    transition: all 0.3s ease;
+    background: white;
+}
+
+.day-checkbox input[type="checkbox"]:checked + span {
+    background: var(--shop-primary);
+    color: white;
+    border-color: var(--shop-primary);
+}
+
+.day-checkbox:hover span {
+    border-color: var(--shop-primary);
+}
+
+/* Form Actions */
+.form-actions {
+    margin-top: 1rem;
+    padding-top: 1.5rem;
+    border-top: 2px solid #f1f5f9;
+}
+
+.btn-save {
+    padding: 0.875rem 2rem;
+    border-radius: 0.75rem;
+    border: none;
+    background: var(--shop-gradient);
+    color: white;
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+}
+
+.btn-save:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 107, 53, 0.4);
+}
+
+.btn-save:active {
+    transform: translateY(0);
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .settings-layout {
+        grid-template-columns: 220px 1fr;
+        gap: 1.25rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .settings-layout {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .settings-sidebar {
+        position: static;
+        order: 2;
+    }
+
+    .settings-nav {
+        flex-direction: row;
+        overflow-x: auto;
+        padding-bottom: 0.5rem;
+    }
+
+    .settings-nav-item {
+        white-space: nowrap;
+        min-width: fit-content;
+    }
+
+    .settings-content {
+        order: 1;
+        padding: 1.5rem;
+    }
+
+    .section-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .time-inputs {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .time-separator {
+        text-align: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .settings-header {
+        padding: 1.25rem;
+    }
+
+    .page-title {
+        font-size: 1.25rem;
+    }
+
+    .settings-content {
+        padding: 1.25rem;
+    }
+
+    .section-title {
+        font-size: 1.5rem;
+    }
+
+    .btn-save {
+        width: 100%;
+        justify-content: center;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle settings navigation
+    const navItems = document.querySelectorAll('.settings-nav-item');
+    const sections = document.querySelectorAll('.settings-section');
+
+    navItems.forEach(item => {
+        item.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            // Remove active class from all items and sections
+            navItems.forEach(nav => nav.classList.remove('active'));
+            sections.forEach(section => section.classList.remove('active'));
+
+            // Add active class to clicked item
+            this.classList.add('active');
+
+            // Show corresponding section
+            const targetSection = this.getAttribute('data-section');
+            const section = document.getElementById(targetSection);
+            if (section) {
+                section.classList.add('active');
+            }
+        });
+    });
+
+    // Handle form submissions
+    document.querySelectorAll('.btn-save').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const section = this.closest('.settings-section');
+            const sectionName = section.id.replace('-settings', '').replace('-', ' ');
+            
+            // Show success message
+            const originalText = this.innerHTML;
+            this.disabled = true;
+            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>Saving...</span>';
+            
+            setTimeout(() => {
+                this.disabled = false;
+                this.innerHTML = originalText;
+                alert(`${sectionName.charAt(0).toUpperCase() + sectionName.slice(1)} settings saved successfully!`);
+            }, 1000);
+        });
+    });
+});
+</script>
+{% endblock %}
+
+
+

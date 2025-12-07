@@ -1,0 +1,21 @@
+{% extends "base_dashboard.html" %}
+
+{% block title %}KWETU DELIVERIES - {{ session.get('employee_role', 'Employee')|replace('KWETU_', '') }} Dashboard{% endblock %}
+
+{% block breadcrumb %}
+<span class="breadcrumb-item">Dashboard</span>
+{% endblock %}
+
+{% block sidebar_nav %}
+<a href="/dashboard/{{ session.get('employee_role', 'KWETU_EMPLOYEE')|lower|replace('kwetu_', '') }}" class="sidebar-nav-item active" id="nav-dashboard">
+    <div class="nav-item-icon">
+        <i class="fas fa-home"></i>
+    </div>
+    <span class="nav-item-text">Dashboard</span>
+    <div class="nav-item-indicator"></div>
+</a>
+{% endblock %}
+
+{% block content %}
+{% endblock %}
+

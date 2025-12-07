@@ -1,0 +1,398 @@
+/* Custom CSS for Kwetu Deliveries */
+
+/* Smooth scrolling */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #FF6B35;
+    border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #FF8C5A;
+}
+
+/* Line clamp utility */
+.line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* Animation for cart count */
+#cart-count {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+}
+
+/* Loading spinner */
+.spinner {
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #FF6B35;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Focus styles for accessibility */
+*:focus {
+    outline: 2px solid #FF6B35;
+    outline-offset: 2px;
+}
+
+/* Modal Styles - Professional & Modern */
+#login-modal,
+#employee-signup-modal,
+#shop-signup-modal {
+    backdrop-filter: blur(4px);
+}
+
+#login-modal-overlay,
+#employee-signup-overlay,
+#shop-signup-overlay {
+    backdrop-filter: blur(4px);
+}
+
+/* Ensure modals are scrollable on all devices */
+#login-modal .relative,
+#employee-signup-modal .relative,
+#shop-signup-modal .relative {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+}
+
+/* Smooth scrollbar for modals */
+#login-modal .overflow-y-auto,
+#employee-signup-modal .overflow-y-auto,
+#shop-signup-modal .overflow-y-auto {
+    scrollbar-width: thin;
+    scrollbar-color: #FF6B35 #f1f1f1;
+}
+
+/* Modal Content Styling */
+.modal-content {
+    background: linear-gradient(to bottom, #ffffff 0%, #fafafa 100%);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(0, 0, 0, 0.05);
+}
+
+/* Login Type Buttons */
+.login-type-btn {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.login-type-btn.active {
+    background: linear-gradient(135deg, #FF6B35 0%, #FF8C5A 100%);
+    color: white;
+    box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+    transform: translateY(-1px);
+}
+
+.login-type-btn:not(.active) {
+    background-color: white;
+    color: #374151;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.login-type-btn:not(.active):hover {
+    background-color: #f9fafb;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Form Input Styling */
+.modal-input {
+    transition: all 0.2s ease;
+    border: 2px solid #e5e7eb;
+    background: #ffffff;
+}
+
+.modal-input:focus {
+    border-color: #FF6B35;
+    box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+    background: #fff;
+}
+
+.modal-input:hover:not(:focus) {
+    border-color: #d1d5db;
+}
+
+/* File Upload Styling */
+.file-upload-area {
+    border: 2px dashed #d1d5db;
+    background: #f9fafb;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.file-upload-area:hover {
+    border-color: #FF6B35;
+    background: #fff5f2;
+}
+
+.file-upload-area input[type="file"] {
+    position: absolute;
+    opacity: 0;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+}
+
+/* Button Styling */
+.modal-submit-btn {
+    background: linear-gradient(135deg, #FF6B35 0%, #FF8C5A 100%);
+    box-shadow: 0 4px 14px rgba(255, 107, 53, 0.4);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.modal-submit-btn::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.modal-submit-btn:hover::before {
+    width: 300px;
+    height: 300px;
+}
+
+.modal-submit-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 107, 53, 0.5);
+}
+
+.modal-submit-btn:active {
+    transform: translateY(0);
+}
+
+/* Location Button */
+.location-btn {
+    background: linear-gradient(135deg, #004E89 0%, #1A6BA3 100%);
+    box-shadow: 0 4px 12px rgba(0, 78, 137, 0.3);
+    transition: all 0.3s ease;
+}
+
+.location-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 78, 137, 0.4);
+}
+
+.location-btn:active {
+    transform: translateY(0);
+}
+
+/* Modal Header */
+.modal-header {
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    border-bottom: 2px solid #e5e7eb;
+}
+
+/* Form Section Styling */
+.form-section {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    border: 1px solid #e5e7eb;
+    transition: all 0.3s ease;
+}
+
+.form-section:hover {
+    border-color: #FF6B35;
+    box-shadow: 0 4px 12px rgba(255, 107, 53, 0.1);
+}
+
+/* Label Styling */
+.modal-label {
+    color: #1f2937;
+    font-weight: 600;
+    letter-spacing: 0.025em;
+}
+
+/* Checkbox Styling */
+input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: #FF6B35;
+    cursor: pointer;
+}
+
+/* Status Messages */
+.code-status {
+    font-weight: 500;
+    padding: 0.25rem 0.5rem;
+    border-radius: 6px;
+    display: inline-block;
+    margin-top: 0.5rem;
+}
+
+.code-status.available {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.code-status.taken {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.code-status.checking {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+    #login-modal,
+    #employee-signup-modal,
+    #shop-signup-modal {
+        padding: 0.5rem;
+    }
+    
+    #login-modal .relative,
+    #employee-signup-modal .relative,
+    #shop-signup-modal .relative {
+        max-height: 98vh;
+    }
+    
+    .form-section {
+        padding: 1rem;
+    }
+}
+
+/* Modal scrollbar styling */
+#login-modal .overflow-y-auto::-webkit-scrollbar,
+#employee-signup-modal .overflow-y-auto::-webkit-scrollbar,
+#shop-signup-modal .overflow-y-auto::-webkit-scrollbar {
+    width: 8px;
+}
+
+#login-modal .overflow-y-auto::-webkit-scrollbar-track,
+#employee-signup-modal .overflow-y-auto::-webkit-scrollbar-track,
+#shop-signup-modal .overflow-y-auto::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+#login-modal .overflow-y-auto::-webkit-scrollbar-thumb,
+#employee-signup-modal .overflow-y-auto::-webkit-scrollbar-thumb,
+#shop-signup-modal .overflow-y-auto::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #FF6B35 0%, #FF8C5A 100%);
+    border-radius: 10px;
+}
+
+#login-modal .overflow-y-auto::-webkit-scrollbar-thumb:hover,
+#employee-signup-modal .overflow-y-auto::-webkit-scrollbar-thumb:hover,
+#shop-signup-modal .overflow-y-auto::-webkit-scrollbar-thumb:hover {
+    background: #FF6B35;
+}
+
+/* Input Group Styling */
+.input-group {
+    position: relative;
+}
+
+.input-icon {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #9ca3af;
+    pointer-events: none;
+}
+
+.input-with-icon {
+    padding-left: 2.75rem;
+}
+
+/* Divider Styling */
+.form-divider {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    margin: 1.5rem 0;
+}
+
+.form-divider::before,
+.form-divider::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.form-divider span {
+    padding: 0 1rem;
+    color: #6b7280;
+    font-size: 0.875rem;
+}
+
+/* File Upload Preview Styles */
+.file-preview-container {
+    transition: all 0.3s ease;
+}
+
+.file-preview-image {
+    border: 2px solid #e5e7eb;
+    transition: all 0.3s ease;
+}
+
+.file-preview-image:hover {
+    border-color: #FF6B35;
+    transform: scale(1.02);
+}
+
+/* Upload area hover effect */
+.file-upload-area:hover {
+    background: #fff5f2;
+    border-color: #FF6B35;
+}
+
+.file-upload-area.has-file {
+    background: #f0fdf4;
+    border-color: #10b981;
+}
+
+/* Print styles */
+@media print {
+    .no-print {
+        display: none;
+    }
+}
+

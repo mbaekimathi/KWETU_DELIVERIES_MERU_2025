@@ -1,0 +1,261 @@
+{% extends "base.html" %}
+
+{% block title %}Order Receipt - {{ order.order_number if order else 'Not Found' }}{% endblock %}
+
+{% block content %}
+<style>
+    .receipt-container {
+        max-width: 600px;
+        margin: 2rem auto;
+        padding: 2rem;
+        background: white;
+        border-radius: 24px;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    }
+
+    .receipt-header {
+        text-align: center;
+        padding-bottom: 2rem;
+        border-bottom: 2px solid #e5e7eb;
+        margin-bottom: 2rem;
+    }
+
+    .receipt-title {
+        font-size: 2rem;
+        font-weight: 800;
+        color: #0f172a;
+        margin-bottom: 0.5rem;
+    }
+
+    .order-number {
+        font-size: 1.25rem;
+        color: #FF6B35;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+    }
+
+    .receipt-section {
+        margin-bottom: 2rem;
+    }
+
+    .section-title {
+        font-size: 1.125rem;
+        font-weight: 700;
+        color: #0f172a;
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .receipt-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid #f3f4f6;
+    }
+
+    .receipt-item:last-child {
+        border-bottom: none;
+    }
+
+    .item-info {
+        flex: 1;
+    }
+
+    .item-name {
+        font-weight: 600;
+        color: #0f172a;
+        margin-bottom: 0.25rem;
+    }
+
+    .item-details {
+        font-size: 0.875rem;
+        color: #64748b;
+    }
+
+    .item-price {
+        font-weight: 700;
+        color: #FF6B35;
+    }
+
+    .receipt-total {
+        background: #f9fafb;
+        padding: 1.5rem;
+        border-radius: 12px;
+        margin-top: 2rem;
+    }
+
+    .total-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.5rem 0;
+        color: #64748b;
+    }
+
+    .total-row.grand-total {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #0f172a;
+        border-top: 2px solid #e5e7eb;
+        padding-top: 1rem;
+        margin-top: 0.5rem;
+    }
+
+    .receipt-footer {
+        text-align: center;
+        padding-top: 2rem;
+        border-top: 2px solid #e5e7eb;
+        margin-top: 2rem;
+        color: #64748b;
+        font-size: 0.875rem;
+    }
+
+    .print-btn {
+        display: inline-block;
+        padding: 0.875rem 2rem;
+        background: linear-gradient(135deg, #FF6B35 0%, #FF8C5A 100%);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-weight: 700;
+        cursor: pointer;
+        margin-top: 1rem;
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+
+    .print-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(255, 107, 53, 0.35);
+    }
+
+    .error-message {
+        text-align: center;
+        padding: 3rem;
+        color: #64748b;
+    }
+</style>
+
+<div class="receipt-container">
+    {% if error %}
+        <div class="error-message">
+            <h2>{{ error }}</h2>
+            <a href="{{ url_for('index') }}" class="print-btn">Go Home</a>
+        </div>
+    {% elif order %}
+        <div class="receipt-header">
+            <h1 class="receipt-title">Order Receipt</h1>
+            <div class="order-number">#{{ order.order_number }}</div>
+            <p style="margin-top: 0.5rem; color: #64748b;">{{ order.created_at.strftime('%B %d, %Y at %I:%M %p') if order.created_at else '' }}</p>
+        </div>
+
+        <div class="receipt-section">
+            <h2 class="section-title">Shop Information</h2>
+            <div class="receipt-item">
+                <div class="item-info">
+                    <div class="item-name">{{ order.shop_name }}</div>
+                    {% if order.shop_location %}
+                        <div class="item-details">📍 {{ order.shop_location }}</div>
+                    {% endif %}
+                    {% if order.shop_phone %}
+                        <div class="item-details">📞 {{ order.shop_phone }}</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="receipt-section">
+            <h2 class="section-title">Order Items</h2>
+            {% for item in order_items %}
+                <div class="receipt-item">
+                    <div class="item-info">
+                        <div class="item-name">{{ item.item_name }}</div>
+                        <div class="item-details">Quantity: {{ item.quantity }} × KES {{ "%.2f"|format(item.unit_price) }}</div>
+                    </div>
+                    <div class="item-price">KES {{ "%.2f"|format(item.subtotal) }}</div>
+                </div>
+            {% endfor %}
+        </div>
+
+        {% if delivery_info %}
+        <div class="receipt-section">
+            <h2 class="section-title">Delivery Information</h2>
+            <div class="receipt-item">
+                <div class="item-info">
+                    <div class="item-name">📍 Delivery Address</div>
+                    <div class="item-details">{{ delivery_info.delivery_address }}</div>
+                    {% if delivery_info.distance_km %}
+                        <div class="item-details">Distance: {{ "%.2f"|format(delivery_info.distance_km) }} km</div>
+                    {% endif %}
+                    {% if delivery_info.estimated_time_minutes %}
+                        <div class="item-details">Estimated Time: {{ delivery_info.estimated_time_minutes }} mins</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="receipt-total">
+            <div class="total-row">
+                <span>Subtotal</span>
+                <span>KES {{ "%.2f"|format(order.subtotal) }}</span>
+            </div>
+            {% if order.delivery_fee %}
+                <div class="total-row">
+                    <span>Delivery Fee</span>
+                    <span>KES {{ "%.2f"|format(order.delivery_fee) }}</span>
+                </div>
+            {% endif %}
+            {% if order.tax %}
+                <div class="total-row">
+                    <span>Tax</span>
+                    <span>KES {{ "%.2f"|format(order.tax) }}</span>
+                </div>
+            {% endif %}
+            {% if order.discount %}
+                <div class="total-row">
+                    <span>Discount</span>
+                    <span>-KES {{ "%.2f"|format(order.discount) }}</span>
+                </div>
+            {% endif %}
+            <div class="total-row grand-total">
+                <span>Grand Total</span>
+                <span>KES {{ "%.2f"|format(order.total) }}</span>
+            </div>
+        </div>
+
+        <div class="receipt-section">
+            <h2 class="section-title">Payment Information</h2>
+            <div class="receipt-item">
+                <div class="item-info">
+                    <div class="item-name">Payment Method</div>
+                    <div class="item-details">{{ order.payment_method.replace('_', ' ').title() }}</div>
+                </div>
+                <div class="item-price" style="color: {% if order.payment_status == 'paid' %}#16a34a{% else %}#f59e0b{% endif %};">
+                    {{ order.payment_status.upper() }}
+                </div>
+            </div>
+            <div class="receipt-item">
+                <div class="item-info">
+                    <div class="item-name">Order Status</div>
+                    <div class="item-details">{{ order.status.replace('_', ' ').title() if order.status else 'N/A' }}</div>
+                </div>
+            </div>
+        </div>
+
+        {% if order.notes %}
+        <div class="receipt-section">
+            <h2 class="section-title">Notes</h2>
+            <p style="color: #64748b;">{{ order.notes }}</p>
+        </div>
+        {% endif %}
+
+        <div class="receipt-footer">
+            <p>Thank you for your order!</p>
+            <button onclick="window.print()" class="print-btn">Print Receipt</button>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+

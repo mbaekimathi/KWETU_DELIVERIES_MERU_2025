@@ -1,0 +1,1338 @@
+{% extends "base_dashboard.html" %}
+
+{% block title %}Shop Management - KWETU DELIVERIES{% endblock %}
+
+{% block breadcrumb %}
+<span class="breadcrumb-item">Dashboard</span>
+<span class="breadcrumb-separator">/</span>
+<span class="breadcrumb-item">Administration</span>
+<span class="breadcrumb-separator">/</span>
+<span class="breadcrumb-item active">Shop Management</span>
+{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <div class="page-header">
+        <h1 class="page-title">Shop Management</h1>
+        <p class="page-subtitle">Manage all registered shops in the system</p>
+    </div>
+
+    {% if error %}
+    <div class="alert alert-error">
+        <i class="fas fa-exclamation-circle"></i>
+        <span>{{ error }}</span>
+    </div>
+    {% endif %}
+
+    <div class="shops-section">
+        <div class="section-header">
+            <div class="section-title-group">
+                <h2 class="section-title">All Shops</h2>
+                <span class="shops-count">{{ shops|length }} shop{{ 's' if shops|length != 1 else '' }} registered</span>
+            </div>
+            <div class="section-actions">
+                <button class="btn btn-primary" id="refresh-shops-btn">
+                    <i class="fas fa-sync-alt"></i>
+                    <span>Refresh</span>
+                </button>
+            </div>
+        </div>
+
+        {% if shops %}
+        <div class="shops-table-container">
+            <table class="shops-table">
+                <thead>
+                    <tr>
+                        <th>Shop Info</th>
+                        <th>Contact</th>
+                        <th>Location</th>
+                        <th>Status</th>
+                        <th>Delivery Mode</th>
+                        <th>Rating</th>
+                        <th>Registered</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for shop in shops %}
+                    <tr>
+                        <td class="shop-info-cell">
+                            <div class="shop-info">
+                                <div class="shop-avatar">
+                                    {% if shop.profile_image %}
+                                        {% set profile_img = shop.profile_image %}
+                                        {% if profile_img.startswith('uploads/') %}
+                                            {% set profile_img_path = profile_img %}
+                                        {% elif profile_img.startswith('profiles/') %}
+                                            {% set profile_img_path = 'uploads/' + profile_img %}
+                                        {% else %}
+                                            {% set profile_img_path = 'uploads/profiles/' + profile_img %}
+                                        {% endif %}
+                                        <img src="{{ url_for('static', filename=profile_img_path) }}" alt="{{ shop.name }}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                        <div class="avatar-placeholder" style="display: none;">
+                                            <i class="fas fa-store"></i>
+                                        </div>
+                                    {% else %}
+                                        <div class="avatar-placeholder">
+                                            <i class="fas fa-store"></i>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="shop-details">
+                                    <div class="shop-name">{{ shop.name }}</div>
+                                    <div class="shop-category">{{ shop.category or 'N/A' }}</div>
+                                    <div class="shop-code">Code: {{ shop.login_code }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="contact-cell">
+                            <div class="contact-info">
+                                <div class="contact-item">
+                                    <i class="fas fa-envelope"></i>
+                                    <span>{{ shop.email }}</span>
+                                </div>
+                                <div class="contact-item">
+                                    <i class="fas fa-phone"></i>
+                                    <span>{{ shop.phone }}</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="location-cell">
+                            <div class="location-info">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <span>{{ shop.location_name or 'Not specified' }}</span>
+                            </div>
+                        </td>
+                        <td class="status-cell">
+                            <div class="status-cell-content">
+                                <span class="status-badge status-{{ shop.status }}">
+                                    {{ shop.status|replace('_', ' ')|title }}
+                                </span>
+                                {% if shop.business_document %}
+                                <button class="action-btn btn-documents" data-shop-id="{{ shop.id }}" data-document="{{ shop.business_document }}" title="View Documents">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td class="delivery-mode-cell">
+                            <div class="delivery-mode-toggle-container">
+                                <label class="toggle-switch">
+                                    <input type="checkbox" class="delivery-mode-toggle" 
+                                           data-shop-id="{{ shop.id }}" 
+                                           {% if shop.delivery_mode == 1 %}checked{% endif %}>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                                <span class="delivery-mode-label">
+                                    {% if shop.delivery_mode == 1 %}
+                                        Delivery Only
+                                    {% else %}
+                                        Items with Delivery
+                                    {% endif %}
+                                </span>
+                            </div>
+                        </td>
+                        <td class="rating-cell">
+                            <div class="rating-display">
+                                <i class="fas fa-star"></i>
+                                <span>{{ "%.1f"|format(shop.rating or 0) }}</span>
+                            </div>
+                        </td>
+                        <td class="date-cell">
+                            <div class="date-info">
+                                <div class="date-value">{{ shop.created_at.strftime('%b %d, %Y') if shop.created_at else 'N/A' }}</div>
+                                <div class="date-time">{{ shop.created_at.strftime('%I:%M %p') if shop.created_at else '' }}</div>
+                            </div>
+                        </td>
+                        <td class="actions-cell">
+                            <div class="action-buttons">
+                                <button class="action-btn btn-view" data-shop-id="{{ shop.id }}" title="View Details">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="action-btn btn-edit" data-shop-id="{{ shop.id }}" title="Edit Shop">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-state-icon">
+                <i class="fas fa-store"></i>
+            </div>
+            <h3 class="empty-state-title">No Shops Found</h3>
+            <p class="empty-state-message">There are no registered shops in the system yet.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Edit Shop Modal -->
+<div class="modal-overlay" id="edit-shop-modal">
+    <div class="modal-container">
+        <div class="modal-header">
+            <h2 class="modal-title">Edit Shop Details</h2>
+            <button class="modal-close-btn" id="close-edit-modal">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <form id="edit-shop-form">
+                <input type="hidden" id="edit-shop-id" name="shop_id">
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="edit-shop-name" class="form-label">Shop Name *</label>
+                        <input type="text" id="edit-shop-name" name="name" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-shop-category" class="form-label">Category *</label>
+                        <input type="text" id="edit-shop-category" name="category" class="form-input" required>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="edit-shop-email" class="form-label">Email *</label>
+                        <input type="email" id="edit-shop-email" name="email" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-shop-phone" class="form-label">Phone *</label>
+                        <input type="text" id="edit-shop-phone" name="phone" class="form-input" required>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="edit-shop-location" class="form-label">Location</label>
+                    <input type="text" id="edit-shop-location" name="location_name" class="form-input">
+                </div>
+                
+                <div class="form-group">
+                    <label for="edit-shop-status" class="form-label">Status</label>
+                    <select id="edit-shop-status" name="status" class="form-input">
+                        <option value="waiting_approval">Waiting Approval</option>
+                        <option value="approved">Approved</option>
+                        <option value="rejected">Rejected</option>
+                        <option value="open">Open</option>
+                        <option value="suspended">Suspended</option>
+                        <option value="banned">Banned</option>
+                        <option value="closed">Closed</option>
+                    </select>
+                </div>
+                
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" id="cancel-edit-btn">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i>
+                        <span>Save Changes</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Documents Modal -->
+<div class="modal-overlay" id="documents-modal">
+    <div class="modal-container modal-large">
+        <div class="modal-header">
+            <h2 class="modal-title">Shop Documents</h2>
+            <button class="modal-close-btn" id="close-documents-modal">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div id="documents-content">
+                <div class="document-item">
+                    <div class="document-preview" id="document-preview">
+                        <div class="document-placeholder">
+                            <i class="fas fa-file-alt"></i>
+                            <p>Loading document...</p>
+                        </div>
+                    </div>
+                    <div class="document-actions">
+                        <a href="#" id="download-document-btn" class="btn btn-primary" download>
+                            <i class="fas fa-download"></i>
+                            <span>Download Document</span>
+                        </a>
+                    </div>
+                </div>
+                <div class="status-update-section">
+                    <h3 class="section-title">Update Shop Status</h3>
+                    <p class="section-description">After reviewing the documents, you can approve the shop by changing its status.</p>
+                    <form id="status-update-form">
+                        <input type="hidden" id="status-shop-id" name="shop_id">
+                        <div class="form-group">
+                            <label for="new-status" class="form-label">New Status</label>
+                            <select id="new-status" name="status" class="form-input">
+                                <option value="open">Active (Approved)</option>
+                                <option value="rejected">Rejected</option>
+                            </select>
+                        </div>
+                        <div class="modal-actions">
+                            <button type="button" class="btn btn-secondary" id="cancel-status-btn">Cancel</button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i>
+                                <span>Update Status</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<style>
+.page-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.page-header {
+    margin-bottom: 2rem;
+}
+
+.page-title {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #0f172a;
+    margin: 0 0 0.5rem 0;
+    letter-spacing: -0.025em;
+}
+
+.page-subtitle {
+    color: #64748b;
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+.alert {
+    padding: 1rem 1.25rem;
+    border-radius: var(--radius-lg);
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.alert-error {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #991b1b;
+}
+
+.shops-section {
+    background: white;
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-md);
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    overflow: hidden;
+}
+
+.section-header {
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.section-title-group {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.section-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0;
+}
+
+.shops-count {
+    padding: 0.25rem 0.75rem;
+    background: #f1f5f9;
+    border-radius: var(--radius-full);
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #475569;
+}
+
+.section-actions {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.btn {
+    padding: 0.625rem 1.25rem;
+    border-radius: var(--radius-lg);
+    font-weight: 600;
+    font-size: 0.9375rem;
+    border: none;
+    cursor: pointer;
+    transition: all var(--transition-base);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--role-primary, #004E89) 0%, var(--role-secondary, #1A6BA3) 100%);
+    color: white;
+    box-shadow: var(--shadow-sm);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.shops-table-container {
+    overflow-x: auto;
+}
+
+.shops-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.shops-table thead {
+    background: #f8fafc;
+}
+
+.shops-table th {
+    padding: 1rem 1.5rem;
+    text-align: left;
+    font-size: 0.8125rem;
+    font-weight: 700;
+    color: #475569;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.shops-table td {
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid #f1f5f9;
+    vertical-align: middle;
+}
+
+.shops-table tbody tr:hover {
+    background: #f8fafc;
+}
+
+.shop-info-cell {
+    min-width: 250px;
+}
+
+.shop-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.shop-avatar {
+    width: 3rem;
+    height: 3rem;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    flex-shrink: 0;
+    background: #f1f5f9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.shop-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.avatar-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #94a3b8;
+    font-size: 1.25rem;
+}
+
+.shop-details {
+    flex: 1;
+    min-width: 0;
+}
+
+.shop-name {
+    font-weight: 700;
+    color: #0f172a;
+    font-size: 0.9375rem;
+    margin-bottom: 0.25rem;
+}
+
+.shop-category {
+    font-size: 0.8125rem;
+    color: #64748b;
+    margin-bottom: 0.25rem;
+}
+
+.shop-code {
+    font-size: 0.75rem;
+    color: #94a3b8;
+    font-family: monospace;
+}
+
+.contact-cell {
+    min-width: 200px;
+}
+
+.contact-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.contact-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: #475569;
+}
+
+.contact-item i {
+    color: #94a3b8;
+    width: 1rem;
+}
+
+.location-cell {
+    min-width: 150px;
+}
+
+.location-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: #475569;
+}
+
+.location-info i {
+    color: #94a3b8;
+}
+
+.status-cell {
+    min-width: 150px;
+}
+
+.delivery-mode-cell {
+    min-width: 180px;
+}
+
+.delivery-mode-toggle-container {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 3rem;
+    height: 1.5rem;
+    flex-shrink: 0;
+}
+
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #cbd5e1;
+    transition: 0.3s;
+    border-radius: 1.5rem;
+}
+
+.toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 1.125rem;
+    width: 1.125rem;
+    left: 0.1875rem;
+    bottom: 0.1875rem;
+    background-color: white;
+    transition: 0.3s;
+    border-radius: 50%;
+}
+
+.toggle-switch input:checked + .toggle-slider {
+    background-color: #10b981;
+}
+
+.toggle-switch input:checked + .toggle-slider:before {
+    transform: translateX(1.5rem);
+}
+
+.toggle-switch input:disabled + .toggle-slider {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.delivery-mode-label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #475569;
+    white-space: nowrap;
+}
+
+.status-cell-content {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-documents {
+    background: #e0e7ff;
+    color: #4f46e5;
+    margin-left: 0.5rem;
+}
+
+.btn-documents:hover {
+    background: #c7d2fe;
+    transform: scale(1.1);
+}
+
+.modal-large {
+    max-width: 800px;
+}
+
+.document-item {
+    margin-bottom: 2rem;
+}
+
+.document-preview {
+    width: 100%;
+    min-height: 400px;
+    border: 2px dashed #e5e7eb;
+    border-radius: var(--radius-lg);
+    background: #f9fafb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1rem;
+    overflow: auto;
+}
+
+.document-placeholder {
+    text-align: center;
+    color: #9ca3af;
+    padding: 2rem;
+}
+
+.document-placeholder i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    display: block;
+}
+
+.document-preview img {
+    max-width: 100%;
+    max-height: 500px;
+    object-fit: contain;
+}
+
+.document-preview iframe {
+    width: 100%;
+    min-height: 500px;
+    border: none;
+}
+
+.document-actions {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+}
+
+.status-update-section {
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 2px solid #e5e7eb;
+}
+
+.section-title {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0 0 0.5rem 0;
+}
+
+.section-description {
+    color: #64748b;
+    font-size: 0.875rem;
+    margin: 0 0 1.5rem 0;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 0.375rem 0.875rem;
+    border-radius: var(--radius-full);
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.status-waiting_approval {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.status-approved {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.status-rejected {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.status-open {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+.status-suspended {
+    background: #f3f4f6;
+    color: #374151;
+}
+
+.status-banned {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.status-closed {
+    background: #f3f4f6;
+    color: #6b7280;
+}
+
+.rating-cell {
+    min-width: 80px;
+}
+
+.rating-display {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.rating-display i {
+    color: #fbbf24;
+}
+
+.date-cell {
+    min-width: 120px;
+}
+
+.date-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.date-value {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #0f172a;
+}
+
+.date-time {
+    font-size: 0.75rem;
+    color: #94a3b8;
+}
+
+.actions-cell {
+    min-width: 120px;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.action-btn {
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: var(--radius-md);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition-base);
+    font-size: 0.875rem;
+}
+
+.btn-view {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+.btn-view:hover {
+    background: #bfdbfe;
+    transform: scale(1.1);
+}
+
+.btn-edit {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.btn-edit:hover {
+    background: #fde68a;
+    transform: scale(1.1);
+}
+
+.btn-status {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.btn-status:hover {
+    background: #a7f3d0;
+    transform: scale(1.1);
+}
+
+.empty-state {
+    padding: 4rem 2rem;
+    text-align: center;
+}
+
+.empty-state-icon {
+    width: 5rem;
+    height: 5rem;
+    margin: 0 auto 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f1f5f9;
+    border-radius: var(--radius-full);
+    color: #94a3b8;
+    font-size: 2rem;
+}
+
+.empty-state-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0 0 0.5rem 0;
+}
+
+.empty-state-message {
+    color: #64748b;
+    margin: 0;
+}
+
+@media (max-width: 1024px) {
+    .shops-table {
+        font-size: 0.875rem;
+    }
+    
+    .shops-table th,
+    .shops-table td {
+        padding: 0.875rem 1rem;
+    }
+    
+    .section-header {
+        padding: 1.25rem 1.5rem;
+    }
+}
+
+/* Modal Styles */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    z-index: 10000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    opacity: 0;
+    transition: opacity var(--transition-base);
+}
+
+.modal-overlay.active {
+    display: flex;
+    opacity: 1;
+}
+
+.modal-container {
+    background: white;
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-2xl);
+    width: 100%;
+    max-width: 600px;
+    max-height: 90vh;
+    overflow-y: auto;
+    transform: scale(0.95);
+    transition: transform var(--transition-base);
+}
+
+.modal-overlay.active .modal-container {
+    transform: scale(1);
+}
+
+.modal-container.modal-small {
+    max-width: 400px;
+}
+
+.modal-header {
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    background: white;
+    z-index: 1;
+}
+
+.modal-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0;
+}
+
+.modal-close-btn {
+    width: 2rem;
+    height: 2rem;
+    border-radius: var(--radius-md);
+    border: none;
+    background: transparent;
+    color: #64748b;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition-base);
+}
+
+.modal-close-btn:hover {
+    background: #f1f5f9;
+    color: #0f172a;
+}
+
+.modal-body {
+    padding: 2rem;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+@media (max-width: 640px) {
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 0.5rem;
+}
+
+.form-input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 2px solid #e5e7eb;
+    border-radius: var(--radius-lg);
+    font-size: 0.9375rem;
+    transition: all var(--transition-base);
+    background: #fafbfc;
+    font-weight: 500;
+    box-sizing: border-box;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: var(--role-primary, #004E89);
+    background: white;
+    box-shadow: 0 0 0 4px rgba(0, 78, 137, 0.1);
+}
+
+.form-textarea {
+    resize: vertical;
+    min-height: 100px;
+    font-family: inherit;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.btn-secondary {
+    background: #f1f5f9;
+    color: #475569;
+    border: 1px solid #e2e8f0;
+}
+
+.btn-secondary:hover {
+    background: #e2e8f0;
+}
+
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Refresh button
+    const refreshBtn = document.getElementById('refresh-shops-btn');
+    if (refreshBtn) {
+        refreshBtn.addEventListener('click', function() {
+            window.location.reload();
+        });
+    }
+    
+    // Modal elements
+    const editModal = document.getElementById('edit-shop-modal');
+    const documentsModal = document.getElementById('documents-modal');
+    const closeEditModal = document.getElementById('close-edit-modal');
+    const closeDocumentsModal = document.getElementById('close-documents-modal');
+    const cancelEditBtn = document.getElementById('cancel-edit-btn');
+    const cancelStatusBtn = document.getElementById('cancel-status-btn');
+    const editShopForm = document.getElementById('edit-shop-form');
+    const statusUpdateForm = document.getElementById('status-update-form');
+    
+    // Open edit modal
+    function openEditModal(shopId) {
+        // Fetch shop details
+        fetch(`/api/admin/shop/${shopId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const shop = data.shop;
+                    document.getElementById('edit-shop-id').value = shop.id;
+                    document.getElementById('edit-shop-name').value = shop.name || '';
+                    document.getElementById('edit-shop-category').value = shop.category || '';
+                    document.getElementById('edit-shop-email').value = shop.email || '';
+                    document.getElementById('edit-shop-phone').value = shop.phone || '';
+                    document.getElementById('edit-shop-location').value = shop.location_name || '';
+                    document.getElementById('edit-shop-status').value = shop.status || 'waiting_approval';
+                    
+                    editModal.classList.add('active');
+                } else {
+                    alert('Error loading shop details: ' + (data.message || 'Unknown error'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error loading shop details');
+            });
+    }
+    
+    // Close edit modal
+    function closeEditModalFunc() {
+        editModal.classList.remove('active');
+        editShopForm.reset();
+    }
+    
+    // Open documents modal
+    function openDocumentsModal(shopId, documentPath) {
+        document.getElementById('status-shop-id').value = shopId;
+        
+        const documentPreview = document.getElementById('document-preview');
+        const downloadBtn = document.getElementById('download-document-btn');
+        
+        // Construct correct path - documents are stored in static/uploads/documents/
+        // Database stores path as "documents/filename.pdf"
+        let documentUrl;
+        if (documentPath.startsWith('uploads/')) {
+            documentUrl = `/static/${documentPath}`;
+        } else if (documentPath.startsWith('documents/')) {
+            documentUrl = `/static/uploads/${documentPath}`;
+        } else {
+            documentUrl = `/static/uploads/documents/${documentPath}`;
+        }
+        
+        downloadBtn.href = documentUrl;
+        downloadBtn.download = documentPath.split('/').pop() || 'document';
+        
+        // Determine file type and display accordingly
+        const fileExtension = documentPath.split('.').pop().toLowerCase();
+        documentPreview.innerHTML = '';
+        
+        if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(fileExtension)) {
+            // Image file
+            const img = document.createElement('img');
+            img.src = documentUrl;
+            img.alt = 'Shop Document';
+            img.onerror = function() {
+                documentPreview.innerHTML = '<div class="document-placeholder"><i class="fas fa-exclamation-triangle"></i><p>Failed to load image</p></div>';
+            };
+            documentPreview.appendChild(img);
+        } else if (fileExtension === 'pdf') {
+            // PDF file
+            const iframe = document.createElement('iframe');
+            iframe.src = documentUrl;
+            iframe.onerror = function() {
+                documentPreview.innerHTML = '<div class="document-placeholder"><i class="fas fa-exclamation-triangle"></i><p>Failed to load PDF. Please download to view.</p></div>';
+            };
+            documentPreview.appendChild(iframe);
+        } else {
+            // Other file types
+            documentPreview.innerHTML = '<div class="document-placeholder"><i class="fas fa-file-alt"></i><p>Preview not available for this file type. Please download to view.</p></div>';
+        }
+        
+        // Fetch current shop status
+        fetch(`/api/admin/shop/${shopId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.shop) {
+                    document.getElementById('new-status').value = data.shop.status || 'waiting_approval';
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching shop status:', error);
+            });
+        
+        documentsModal.classList.add('active');
+    }
+    
+    // Close documents modal
+    function closeDocumentsModalFunc() {
+        documentsModal.classList.remove('active');
+        const documentPreview = document.getElementById('document-preview');
+        documentPreview.innerHTML = '<div class="document-placeholder"><i class="fas fa-file-alt"></i><p>Loading document...</p></div>';
+    }
+    
+    // Event listeners for modals
+    if (closeEditModal) {
+        closeEditModal.addEventListener('click', closeEditModalFunc);
+    }
+    if (cancelEditBtn) {
+        cancelEditBtn.addEventListener('click', closeEditModalFunc);
+    }
+    if (closeDocumentsModal) {
+        closeDocumentsModal.addEventListener('click', closeDocumentsModalFunc);
+    }
+    if (cancelStatusBtn) {
+        cancelStatusBtn.addEventListener('click', closeDocumentsModalFunc);
+    }
+    
+    // Close modal when clicking overlay
+    if (editModal) {
+        editModal.addEventListener('click', function(e) {
+            if (e.target === editModal) {
+                closeEditModalFunc();
+            }
+        });
+    }
+    
+    if (documentsModal) {
+        documentsModal.addEventListener('click', function(e) {
+            if (e.target === documentsModal) {
+                closeDocumentsModalFunc();
+            }
+        });
+    }
+    
+    // Handle form submission
+    if (editShopForm) {
+        editShopForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const shopId = document.getElementById('edit-shop-id').value;
+            const formData = {
+                name: document.getElementById('edit-shop-name').value,
+                category: document.getElementById('edit-shop-category').value,
+                email: document.getElementById('edit-shop-email').value,
+                phone: document.getElementById('edit-shop-phone').value,
+                location_name: document.getElementById('edit-shop-location').value,
+                status: document.getElementById('edit-shop-status').value
+            };
+            
+            // Show loading state
+            const submitBtn = editShopForm.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>Saving...</span>';
+            
+            fetch(`/api/admin/shop/${shopId}/update`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+                
+                if (data.success) {
+                    alert('Shop updated successfully!');
+                    closeEditModalFunc();
+                    window.location.reload();
+                } else {
+                    alert('Error: ' + (data.message || 'Failed to update shop'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+                alert('Error updating shop');
+            });
+        });
+    }
+    
+    // Handle status update form
+    if (statusUpdateForm) {
+        statusUpdateForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const shopId = document.getElementById('status-shop-id').value;
+            const newStatus = document.getElementById('new-status').value;
+            
+            const submitBtn = statusUpdateForm.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>Updating...</span>';
+            
+            fetch(`/api/admin/shop/${shopId}/update-status`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ status: newStatus })
+            })
+            .then(response => response.json())
+            .then(data => {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+                
+                if (data.success) {
+                    alert('Shop status updated successfully!');
+                    closeDocumentsModalFunc();
+                    window.location.reload();
+                } else {
+                    alert('Error: ' + (data.message || 'Failed to update status'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+                alert('Error updating shop status');
+            });
+        });
+    }
+    
+    // Delivery mode toggle handlers
+    document.querySelectorAll('.delivery-mode-toggle').forEach(toggle => {
+        toggle.addEventListener('change', function() {
+            const shopId = this.getAttribute('data-shop-id');
+            const isChecked = this.checked;
+            const newMode = isChecked ? 1 : 0;
+            
+            // Disable toggle during request
+            this.disabled = true;
+            
+            fetch(`/api/admin/shop/${shopId}/toggle-delivery`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                this.disabled = false;
+                
+                if (data.success) {
+                    // Update the label
+                    const label = this.closest('.delivery-mode-toggle-container').querySelector('.delivery-mode-label');
+                    if (label) {
+                        label.textContent = newMode === 1 ? 'Delivery Only' : 'Items with Delivery';
+                    }
+                } else {
+                    // Revert toggle on error
+                    this.checked = !isChecked;
+                    alert('Error: ' + (data.message || 'Failed to toggle delivery mode'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                this.disabled = false;
+                // Revert toggle on error
+                this.checked = !isChecked;
+                alert('Error toggling delivery mode');
+            });
+        });
+    });
+    
+    // Action buttons
+    document.querySelectorAll('.action-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const shopId = this.getAttribute('data-shop-id');
+            
+            if (this.classList.contains('btn-view')) {
+                // View shop - open in new page
+                window.location.href = `/dashboard/admin/shop/${shopId}`;
+            } else if (this.classList.contains('btn-edit')) {
+                // Edit shop - open modal
+                openEditModal(shopId);
+            } else if (this.classList.contains('btn-documents')) {
+                // View documents - open modal
+                const documentPath = this.getAttribute('data-document');
+                openDocumentsModal(shopId, documentPath);
+            }
+        });
+    });
+});
+</script>
+{% endblock %}
+
