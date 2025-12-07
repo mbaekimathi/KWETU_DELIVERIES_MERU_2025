@@ -1,0 +1,17 @@
+# Ignore zip files
+*.zip
+
+# Common ignore patterns
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.venv
+*.log
+.DS_Store
+Thumbs.db
+
